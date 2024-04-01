@@ -79,11 +79,11 @@ export class Token {
     public type: TokenType,
     public lexeme: string,
     public literal: any,
-    public line: number,
+    public line: number
   ) {}
 
   public toString(): string {
-    return `${this.type} - ${this.lexeme} - ${this.literal}`
+    return `type: ${this.type}, lexeme: ${this.lexeme}, literal: ${this.literal}, line: ${this.line}`
   }
 }
 
@@ -233,7 +233,7 @@ export class Lexer {
 
     this.push(
       TokenType.NUMBER,
-      parseFloat(this.source.substring(this.start, this.cursor)),
+      parseFloat(this.source.substring(this.start, this.cursor))
     )
   }
 

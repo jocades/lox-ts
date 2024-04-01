@@ -1,3 +1,4 @@
+import { Lox } from '../lox'
 import {
   BinaryExpr,
   GroupingExpr,
@@ -52,9 +53,6 @@ export class Parser {
     try {
       return this.expression()
     } catch (err) {
-      if (err instanceof SyntaxError) {
-        console.error(`[line ${err.line}] SyntaxError: ${err.message}`)
-      }
       return null
     }
   }
@@ -212,6 +210,7 @@ export class Parser {
   // --- ERRORS ---
 
   private error(token: Token, message: string): SyntaxError {
+    Lox.error(token, message)
     return new SyntaxError(
       message,
       token.line,
@@ -250,14 +249,14 @@ export class Parser {
 function test() {
   let source = `-2 + 2 * 2`
   let tokens = new Lexer(source).lex()
-  console.log('TOKENS', tokens.map(String))
+  // console.log('TOKENS', tokens.map(String))
 
   let parser = new Parser(tokens)
   let expr = parser.parse()
   console.log('EXPR', expr)
 
-  let printer = new AstPrinter()
-  console.log(printer.print(expr!))
+  // let printer = new AstPrinter()
+  // console.log(printer.print(expr!))
 }
 
-test()
+// test()
