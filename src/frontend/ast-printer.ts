@@ -57,4 +57,4 @@ function test() {
   console.log(printer.print(expression)) // (* (- 123) (group 45.67))
 }
 
-test()
+// test()
