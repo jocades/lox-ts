@@ -20,7 +20,7 @@ export class Lox {
 
   static repl(): void {
     while (true) {
-      const input = prompt('>')
+      const input = prompt('[lox]>')
 
       if (!input) {
         continue

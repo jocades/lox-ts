@@ -1,7 +1,7 @@
-import * as ast from '../frontend/ast'
-import { RuntimeError } from '../lib/errors'
-import { Token, TokenType } from '../frontend/lexer'
-import { Lox } from '../lox'
+import * as ast from '@/frontend/ast'
+import { Token, TokenType } from '@/frontend/lexer'
+import { RuntimeError } from '@/lib/errors'
+import { Lox } from '@/lox'
 import type { LoxObject } from './values'
 
 export class Interpreter implements ast.ExprVisitor<LoxObject> {

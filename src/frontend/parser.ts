@@ -1,13 +1,13 @@
-import { Lox } from '../lox'
 import {
   BinaryExpr,
+  type Expr,
   GroupingExpr,
   LiteralExpr,
   UnaryExpr,
-  type Expr,
 } from './ast'
 import { SyntaxError } from '../lib/errors'
 import { Lexer, TokenType, type Token } from './lexer'
+import { Lox } from '../lox'
 
 // --- LOX EXPRESSIONS (RECURSIVE DESCENT PARSING) ---
 // A recursive descent parser is a literal translation of the grammar’s rules
@@ -24,6 +24,14 @@ import { Lexer, TokenType, type Token } from './lexer'
 
 // GRAMMAR RULES:
 // -------------
+// program        → statement* EOF ;
+//
+// statement      → exprStmt
+//               | printStmt ;
+//
+// exprStmt       → expression ";" ;
+// printStmt      → "echo" expression ";" ;
+//
 // expression     → equality ;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -155,11 +163,11 @@ export class Parser {
 
     if (this.match(TokenType.LPAREN)) {
       let expr = this.expression()
-      this.consume(TokenType.RPAREN, 'Expect ")" after expression.')
+      this.consume(TokenType.RPAREN, 'Expected ")" after expression.')
       return new GroupingExpr(expr)
     }
 
-    throw this.error(this.peek(), 'Expect expression.')
+    throw this.error(this.peek(), 'Expected expression.')
   }
 
   // --- UTIL ---
