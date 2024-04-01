@@ -1,4 +1,4 @@
-export const enum TokenType {
+export enum TokenType {
   // Single-character tokens.
   LPAREN,
   RPAREN,

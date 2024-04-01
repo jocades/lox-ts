@@ -1,5 +1,5 @@
 import * as ast from '../frontend/ast'
-import { RuntimeError } from '../frontend/errors'
+import { RuntimeError } from '../lib/errors'
 import { Token, TokenType } from '../frontend/lexer'
 import { Lox } from '../lox'
 import type { LoxObject } from './values'
@@ -44,7 +44,7 @@ export class Interpreter implements ast.ExprVisitor<LoxObject> {
       case TokenType.MINUS:
         this.checkNumberOperands(expr.operator, left, right)
         return left - right
-      case TokenType.PLUS:
+      case TokenType.PLUS: {
         if (typeof left === 'number' && typeof right === 'number') {
           return left + right
         }
@@ -55,10 +55,17 @@ export class Interpreter implements ast.ExprVisitor<LoxObject> {
           expr.operator,
           'Operands must be two numbers or two strings',
         )
-
-      case TokenType.SLASH:
+      }
+      case TokenType.SLASH: {
         this.checkNumberOperands(expr.operator, left, right)
+        if (right === 0) {
+          throw new RuntimeError(
+            expr.operator,
+            'Division by zero is not allowed.',
+          )
+        }
         return left / right
+      }
       case TokenType.STAR:
         this.checkNumberOperands(expr.operator, left, right)
         return left * right
@@ -115,7 +122,7 @@ export class Interpreter implements ast.ExprVisitor<LoxObject> {
 
   private isEqual(x: LoxObject, y: LoxObject): boolean {
     if (x === null && y === null) return true
-    if (x === null) return true
+    if (x === null) return false
 
     return x === y
   }

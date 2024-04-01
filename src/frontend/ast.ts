@@ -1,5 +1,5 @@
 import type { LoxObject } from '../runtime/values'
-import { Token, TokenType } from './lexer'
+import { Token } from './lexer'
 
 // Backus-Naur form (BNF) grammar for the AST nodes of the language.
 

@@ -6,7 +6,7 @@ import {
   UnaryExpr,
   type Expr,
 } from './ast'
-import { SyntaxError } from './errors'
+import { SyntaxError } from '../lib/errors'
 import { Lexer, TokenType, type Token } from './lexer'
 
 // --- LOX EXPRESSIONS (RECURSIVE DESCENT PARSING) ---

@@ -1,4 +1,4 @@
-import type { Token, TokenType } from './lexer'
+import type { Token } from '../frontend/lexer'
 
 export class SyntaxError extends Error {
   name = 'SyntaxError'

@@ -1,5 +1,5 @@
 import { AstPrinter } from './frontend/ast-printer'
-import type { RuntimeError } from './frontend/errors'
+import type { RuntimeError } from './lib/errors'
 import { Lexer, TokenType, type Token } from './frontend/lexer'
 import { Parser } from './frontend/parser'
 import { Interpreter } from './runtime/interpreter'
@@ -43,12 +43,13 @@ export class Lox {
     const parser = new Parser(tokens)
     const expression = parser.parse()
 
-    // Stop if there was a syntax error
+    // stop if there was a syntax error
     if (this.hadError) return
+
+    console.log('[AST]', expression)
 
     console.log(new AstPrinter().print(expression!))
     this.interpreter.interpret(expression!)
-    // console.log('[AST]', expression)
   }
 
   // --- ERROR HANDLING ---
@@ -56,13 +57,13 @@ export class Lox {
   static error(token: Token, message: string): void {
     this.report(
       token.line,
-      token.type === TokenType.EOF ? ' at end' : ` at '${token.lexeme}'`,
+      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
       message,
     )
   }
 
   private static report(line: number, where: string, message: string): void {
-    console.log(`[line ${line}] Error${where}: ${message}`)
+    console.log(`[line ${line}] Error ${where}: ${message}`)
     this.hadError = true
   }
 
@@ -71,7 +72,7 @@ export class Lox {
     this.hadRuntimeError = true
   }
 
-  private static handleCommand(input: string) {
+  private static handleCommand(input: string): void {
     switch (input) {
       case '.exit':
         process.exit(0)
