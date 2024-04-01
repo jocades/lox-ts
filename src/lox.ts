@@ -1,8 +1,57 @@
+import { AstPrinter } from './frontend/ast-printer'
+import type { RuntimeError } from './frontend/errors'
 import { Lexer, TokenType, type Token } from './frontend/lexer'
 import { Parser } from './frontend/parser'
+import { Interpreter } from './runtime/interpreter'
 
 export class Lox {
+  private static interpreter = new Interpreter()
   static hadError = false
+  static hadRuntimeError = false
+
+  static async file(path: string): Promise<void> {
+    const source = await Bun.file(path).text()
+    this.run(source)
+
+    // indicate an error in the exit code
+    if (this.hadError) process.exit(65)
+    if (this.hadRuntimeError) process.exit(70)
+  }
+
+  static repl(): void {
+    while (true) {
+      const input = prompt('>')
+
+      if (!input) {
+        continue
+      }
+
+      if (input.startsWith('.')) {
+        this.handleCommand(input)
+        continue
+      }
+
+      this.run(input)
+      this.hadError = false
+    }
+  }
+
+  static run(source: string): void {
+    const lexer = new Lexer(source)
+    const tokens = lexer.lex()
+
+    const parser = new Parser(tokens)
+    const expression = parser.parse()
+
+    // Stop if there was a syntax error
+    if (this.hadError) return
+
+    console.log(new AstPrinter().print(expression!))
+    this.interpreter.interpret(expression!)
+    // console.log('[AST]', expression)
+  }
+
+  // --- ERROR HANDLING ---
 
   static error(token: Token, message: string): void {
     this.report(
@@ -12,30 +61,26 @@ export class Lox {
     )
   }
 
-  static report(line: number, where: string, message: string): void {
-    console.error(`[line ${line}] Error${where}: ${message}`)
+  private static report(line: number, where: string, message: string): void {
+    console.log(`[line ${line}] Error${where}: ${message}`)
     this.hadError = true
   }
 
-  static run(source: string): void {
-    const tokens = new Lexer(source).lex()
-    tokens.forEach((token) => console.log(token.toString()))
+  static runtimeError(error: RuntimeError): void {
+    console.log(error.message, `\n[line ${error.token.line}]`)
+    this.hadRuntimeError = true
+  }
 
-    const parser = new Parser(tokens)
-
-    const expression = parser.parse()
-
-    // Stop if there was a syntax error
-    if (this.hadError) return
-
-    console.log('[AST]', expression)
+  private static handleCommand(input: string) {
+    switch (input) {
+      case '.exit':
+        process.exit(0)
+      default:
+        console.log(`Unknown command '${input}'`)
+    }
   }
 }
 
-const source = `
-(2 + 2) * 2
-2 + 2 * 2
-
-`
-
-Lox.run(source)
+// const source = `2 + 2 * 2 == 8`
+//
+// Lox.run(source)

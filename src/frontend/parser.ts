@@ -6,7 +6,6 @@ import {
   UnaryExpr,
   type Expr,
 } from './ast'
-import { AstPrinter } from './ast-printer'
 import { SyntaxError } from './errors'
 import { Lexer, TokenType, type Token } from './lexer'
 
@@ -34,8 +33,6 @@ import { Lexer, TokenType, type Token } from './lexer'
 //                | primary ;
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
 //                | "(" expression ")" ;
-
-let hadError = false
 
 export class Parser {
   private tokens: Token[]
@@ -207,8 +204,6 @@ export class Parser {
     return this.tokens[this.current - 1]
   }
 
-  // --- ERRORS ---
-
   private error(token: Token, message: string): SyntaxError {
     Lox.error(token, message)
     return new SyntaxError(
@@ -247,7 +242,7 @@ export class Parser {
 }
 
 function test() {
-  let source = `-2 + 2 * 2`
+  let source = `(2 + 2) * 2`
   let tokens = new Lexer(source).lex()
   // console.log('TOKENS', tokens.map(String))
 

@@ -1,3 +1,4 @@
+import type { LoxObject } from '../runtime/values'
 import { Token, TokenType } from './lexer'
 
 // Backus-Naur form (BNF) grammar for the AST nodes of the language.
@@ -91,7 +92,7 @@ export class GroupingExpr implements Expr {
 }
 
 export class LiteralExpr implements Expr {
-  constructor(public value: any) {}
+  constructor(public value: LoxObject) {}
 
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitLiteralExpr(this)
