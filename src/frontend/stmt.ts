@@ -1,15 +1,17 @@
 import type { Expr } from './expr'
+import type { Token } from './lexer'
 
-interface Stmt {
+export interface Stmt {
   accept<R>(visitor: StmtVisitor<R>): R
 }
 
-interface StmtVisitor<R> {
+export interface StmtVisitor<R> {
   visitEchoStmt(stmt: EchoStmt): R
   visitExpressionStmt(stmt: ExpressionStmt): R
+  visitLetStmt(stmt: LetStmt): R
 }
 
-class EchoStmt implements Stmt {
+export class EchoStmt implements Stmt {
   constructor(public expression: Expr) {}
 
   accept<R>(visitor: StmtVisitor<R>): R {
@@ -17,10 +19,21 @@ class EchoStmt implements Stmt {
   }
 }
 
-class ExpressionStmt implements Stmt {
+export class ExpressionStmt implements Stmt {
   constructor(public expression: Expr) {}
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitExpressionStmt(this)
+  }
+}
+
+export class LetStmt implements Stmt {
+  constructor(
+    public name: Token,
+    public initializer: Expr | null,
+  ) {}
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitLetStmt(this)
   }
 }

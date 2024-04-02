@@ -3,12 +3,18 @@ import { Token, TokenType } from '@/frontend/lexer'
 import { RuntimeError } from '@/lib/errors'
 import { Lox } from '@/lox'
 import type { LoxObject } from './values'
+import { Environment } from './environment'
 
-export class Interpreter implements ast.ExprVisitor<LoxObject> {
-  public interpret(expression: ast.Expr): void {
+export class Interpreter
+  implements ast.ExprVisitor<LoxObject>, ast.StmtVisitor<void>
+{
+  private environment = new Environment()
+
+  public interpret(statements: ast.Stmt[]): void {
     try {
-      let value = this.evaluate(expression)
-      console.log(this.stringify(value))
+      for (let statement of statements) {
+        this.execute(statement)
+      }
     } catch (err) {
       if (err instanceof RuntimeError) {
         Lox.runtimeError(err)
@@ -18,6 +24,33 @@ export class Interpreter implements ast.ExprVisitor<LoxObject> {
 
   private evaluate(expr: ast.Expr): LoxObject {
     return expr.accept(this)
+  }
+
+  private execute(stmt: ast.Stmt): void {
+    stmt.accept(this)
+  }
+
+  visitExpressionStmt(stmt: ast.ExpressionStmt): void {
+    this.evaluate(stmt.expression)
+  }
+
+  visitEchoStmt(stmt: ast.EchoStmt): void {
+    let value = this.evaluate(stmt.expression)
+    console.log(this.stringify(value))
+  }
+
+  visitLetStmt(stmt: ast.LetStmt): void {
+    let value: LoxObject = null
+    if (stmt.initializer !== null) {
+      value = this.evaluate(stmt.initializer)
+    }
+    this.environment.define(stmt.name.lexeme, value)
+  }
+
+  visitAssignExpr(expr: ast.AssignExpr): LoxObject {
+    let value = this.evaluate(expr.value)
+    this.environment.assign(expr.name, value)
+    return value
   }
 
   visitBinaryExpr(expr: ast.BinaryExpr): LoxObject {
@@ -98,6 +131,12 @@ export class Interpreter implements ast.ExprVisitor<LoxObject> {
     // unreachable
     return null
   }
+
+  visitVariableExpr(expr: ast.VariableExpr) {
+    return this.environment.get(expr.name)
+  }
+
+  // -- UTIL ---
 
   private checkNumberOperand(operator: Token, operand: LoxObject): void {
     if (typeof operand === 'number') return

@@ -1,6 +1,6 @@
 #!/usr/bin/env -S bun run
 
-import { Lox } from './src/lox'
+import { Lox } from '@/lox'
 
 async function main(argv: string[]) {
   if (argv.length > 3) {
@@ -18,6 +18,5 @@ async function main(argv: string[]) {
 }
 
 if (import.meta.main) {
-  // ARGV -> ['/bin/bun', '__filename', ...args]
-  main(process.argv)
+  main(process.argv) // ARGV -> ['/bin/bun', '__filename', ...args]
 }

@@ -61,10 +61,23 @@ export interface Expr {
 }
 
 export interface ExprVisitor<R> {
+  visitAssignExpr(expr: AssignExpr): R
   visitBinaryExpr(expr: BinaryExpr): R
   visitGroupingExpr(expr: GroupingExpr): R
   visitLiteralExpr(expr: LiteralExpr): R
   visitUnaryExpr(expr: UnaryExpr): R
+  visitVariableExpr(expr: VariableExpr): R
+}
+
+export class AssignExpr implements Expr {
+  constructor(
+    public name: Token,
+    public value: Expr,
+  ) {}
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitAssignExpr(this)
+  }
 }
 
 export class BinaryExpr implements Expr {
@@ -100,15 +113,20 @@ export class LiteralExpr implements Expr {
 }
 
 export class UnaryExpr implements Expr {
-  operator: Token
-  right: Expr
-
-  constructor(operator: Token, right: Expr) {
-    this.operator = operator
-    this.right = right
-  }
+  constructor(
+    public operator: Token,
+    public right: Expr,
+  ) {}
 
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitUnaryExpr(this)
+  }
+}
+
+export class VariableExpr implements Expr {
+  constructor(public name: Token) {}
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitVariableExpr(this)
   }
 }

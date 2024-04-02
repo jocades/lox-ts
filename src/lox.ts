@@ -41,15 +41,15 @@ export class Lox {
     const tokens = lexer.lex()
 
     const parser = new Parser(tokens)
-    const expression = parser.parse()
+    const statements = parser.parse()
 
     // stop if there was a syntax error
     if (this.hadError) return
 
-    console.log('[AST]', expression)
+    console.log('[AST]', statements)
+    // console.log(new AstPrinter().print(statements!))
 
-    console.log(new AstPrinter().print(expression!))
-    this.interpreter.interpret(expression!)
+    this.interpreter.interpret(statements!)
   }
 
   // --- ERROR HANDLING ---

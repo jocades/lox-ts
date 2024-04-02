@@ -4,8 +4,14 @@ import {
   GroupingExpr,
   LiteralExpr,
   UnaryExpr,
+  type Stmt,
+  EchoStmt,
+  ExpressionStmt,
+  LetStmt,
+  VariableExpr,
+  AssignExpr,
 } from './ast'
-import { SyntaxError } from '../lib/errors'
+import { ParseError } from '../lib/errors'
 import { Lexer, TokenType, type Token } from './lexer'
 import { Lox } from '../lox'
 
@@ -24,15 +30,21 @@ import { Lox } from '../lox'
 
 // GRAMMAR RULES:
 // -------------
-// program        → statement* EOF ;
+// program        → declaration* EOF ;
+//
+// declaration    → letDecl
+//                | statement ;
 //
 // statement      → exprStmt
-//               | printStmt ;
+//                | printStmt ;
 //
 // exprStmt       → expression ";" ;
+// letDecl        → "let" IDENTIFIER ( "=" expression )? ";" ;
 // printStmt      → "echo" expression ";" ;
 //
-// expression     → equality ;
+// expression     → assignment ;
+// assignment     → IDENTIFIER "=" assignment
+//                | equality ;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 // term           → factor ( ( "-" | "+" ) factor )* ;
@@ -40,7 +52,9 @@ import { Lox } from '../lox'
 // unary          → ( "!" | "-" ) unary
 //                | primary ;
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
-//                | "(" expression ")" ;
+//                | "(" expression ")"
+//                | IDENTIFIER ;
+//
 
 export class Parser {
   private tokens: Token[]
@@ -54,19 +68,98 @@ export class Parser {
    * Parses the tokens into an expression
    * @returns the parsed expression
    */
-  public parse(): Expr | null {
-    try {
-      return this.expression()
-    } catch (err) {
-      return null
+  public parse(): Stmt[] {
+    let statements: Stmt[] = []
+
+    while (!this.eof()) {
+      try {
+        statements.push(this.declaration())
+      } catch (err) {
+        if (err instanceof ParseError) this.synchronize()
+        else throw err
+      }
     }
+
+    return statements
   }
 
   /**
-   * expression     → equality ;
+   * expression     → assignment ;
    */
   private expression(): Expr {
-    return this.equality()
+    return this.assignment()
+  }
+
+  /**
+   * declaration    → letDecl
+   *                | statement ;
+   */
+  private declaration(): Stmt {
+    if (this.match(TokenType.LET)) return this.letDeclaration()
+    return this.statement()
+  }
+
+  /**
+   * letDecl        → "let" IDENTIFIER ( "=" expression )? ";" ;
+   */
+  private letDeclaration(): Stmt {
+    let name = this.consume(TokenType.IDENTIFIER, 'Expected variable name.')
+
+    let initializer: Expr | null = null
+    if (this.match(TokenType.EQUAL)) {
+      initializer = this.expression()
+    }
+
+    this.consume(
+      TokenType.SEMICOLON,
+      "Expected ';' after variable declaration.",
+    )
+
+    return new LetStmt(name, initializer)
+  }
+
+  /**
+   * statement      → exprStmt
+   *               | printStmt ;
+   */
+  private statement(): Stmt {
+    if (this.match(TokenType.ECHO)) return this.echoStatement()
+
+    return this.expressionStatement()
+  }
+
+  private echoStatement(): Stmt {
+    let value = this.expression()
+    this.consume(TokenType.SEMICOLON, "Expected ';' after value.")
+    return new EchoStmt(value)
+  }
+
+  private expressionStatement(): Stmt {
+    let expr = this.expression()
+    this.consume(TokenType.SEMICOLON, "Expected ';' after expression.")
+    return new ExpressionStmt(expr)
+  }
+
+  /**
+   * assignment     → IDENTIFIER "=" assignment
+   *                | equality ;
+   */
+  private assignment(): Expr {
+    let expr = this.equality()
+
+    if (this.match(TokenType.EQUAL)) {
+      let equals = this.prev()
+      let value = this.assignment()
+
+      if (expr instanceof VariableExpr) {
+        let name = expr.name
+        return new AssignExpr(name, value)
+      }
+
+      this.error(equals, 'Invalid assignment target.')
+    }
+
+    return expr
   }
 
   /**
@@ -161,9 +254,13 @@ export class Parser {
       return new LiteralExpr(this.prev().literal)
     }
 
+    if (this.match(TokenType.IDENTIFIER)) {
+      return new VariableExpr(this.prev())
+    }
+
     if (this.match(TokenType.LPAREN)) {
       let expr = this.expression()
-      this.consume(TokenType.RPAREN, 'Expected ")" after expression.')
+      this.consume(TokenType.RPAREN, "Expected ')' after expression.")
       return new GroupingExpr(expr)
     }
 
@@ -212,9 +309,9 @@ export class Parser {
     return this.tokens[this.current - 1]
   }
 
-  private error(token: Token, message: string): SyntaxError {
+  private error(token: Token, message: string): ParseError {
     Lox.error(token, message)
-    return new SyntaxError(
+    return new ParseError(
       message,
       token.line,
       token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
