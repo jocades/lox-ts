@@ -10,12 +10,13 @@ import {
   LetStmt,
   VariableExpr,
   AssignExpr,
+  BlockStmt,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, TokenType, type Token } from './lexer'
 import { Lox } from '../lox'
 
-// --- LOX EXPRESSIONS (RECURSIVE DESCENT PARSING) ---
+// --- LOX EXPRESSIONS (RECURSIVE DESCENT PARSING) --- https://en.wikipedia.org/wiki/Recursive_descent_parser
 // A recursive descent parser is a literal translation of the grammar’s rules
 // straight into imperative code. Each rule becomes a function. The body of the
 // rule translates to code roughly like:
@@ -37,7 +38,9 @@ import { Lox } from '../lox'
 //
 // statement      → exprStmt
 //                | printStmt ;
+//                | block ;
 //
+// block          → "{" declaration* "}" ;
 // exprStmt       → expression ";" ;
 // letDecl        → "let" IDENTIFIER ( "=" expression )? ";" ;
 // printStmt      → "echo" expression ";" ;
@@ -96,6 +99,7 @@ export class Parser {
    */
   private declaration(): Stmt {
     if (this.match(TokenType.LET)) return this.letDeclaration()
+
     return this.statement()
   }
 
@@ -124,6 +128,7 @@ export class Parser {
    */
   private statement(): Stmt {
     if (this.match(TokenType.ECHO)) return this.echoStatement()
+    if (this.match(TokenType.LBRACE)) return new BlockStmt(this.block())
 
     return this.expressionStatement()
   }
@@ -134,6 +139,24 @@ export class Parser {
     return new EchoStmt(value)
   }
 
+  /**
+   * block          → "{" declaration* "}" ;
+   */
+  private block(): Stmt[] {
+    let statements: Stmt[] = []
+
+    while (!this.check(TokenType.RBRACE) && !this.eof()) {
+      statements.push(this.declaration())
+    }
+
+    this.consume(TokenType.RBRACE, "Expected '}' after block.")
+    return statements
+  }
+
+  /**
+   * exprStmt       → expression ";" ;
+   * a statement that evaluates an expression
+   */
   private expressionStatement(): Stmt {
     let expr = this.expression()
     this.consume(TokenType.SEMICOLON, "Expected ';' after expression.")
@@ -243,7 +266,9 @@ export class Parser {
   }
 
   /**
-   * primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+   * primary        → NUMBER | STRING | "true" | "false" | "nil"
+   *                | "(" expression ")"
+   *                | IDENTIFIER ;
    */
   private primary(): Expr {
     if (this.match(TokenType.FALSE)) return new LiteralExpr(false)

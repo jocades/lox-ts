@@ -6,9 +6,18 @@ export interface Stmt {
 }
 
 export interface StmtVisitor<R> {
+  visitBlockStmt(stmt: BlockStmt): R
   visitEchoStmt(stmt: EchoStmt): R
   visitExpressionStmt(stmt: ExpressionStmt): R
   visitLetStmt(stmt: LetStmt): R
+}
+
+export class BlockStmt implements Stmt {
+  constructor(public statements: Stmt[]) {}
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitBlockStmt(this)
+  }
 }
 
 export class EchoStmt implements Stmt {

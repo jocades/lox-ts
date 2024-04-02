@@ -16,9 +16,8 @@ export class Interpreter
         this.execute(statement)
       }
     } catch (err) {
-      if (err instanceof RuntimeError) {
-        Lox.runtimeError(err)
-      }
+      if (err instanceof RuntimeError) Lox.runtimeError(err)
+      else throw err
     }
   }
 
@@ -28,6 +27,23 @@ export class Interpreter
 
   private execute(stmt: ast.Stmt): void {
     stmt.accept(this)
+  }
+
+  executeBlock(statements: ast.Stmt[], environment: Environment): void {
+    let previous = this.environment
+    try {
+      this.environment = environment
+
+      for (let statement of statements) {
+        this.execute(statement)
+      }
+    } finally {
+      this.environment = previous
+    }
+  }
+
+  visitBlockStmt(stmt: ast.BlockStmt): void {
+    this.executeBlock(stmt.statements, new Environment(this.environment))
   }
 
   visitExpressionStmt(stmt: ast.ExpressionStmt): void {

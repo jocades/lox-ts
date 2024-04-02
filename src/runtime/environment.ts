@@ -3,20 +3,36 @@ import type { LoxObject } from './values'
 import { RuntimeError } from '@/lib/errors'
 
 export class Environment {
+  public enclosing?: Environment
   private values: Map<string, LoxObject> = new Map()
 
-  public get(name: Token) {
+  constructor(enclosing?: Environment) {
+    this.enclosing = enclosing
+  }
+
+  public get(name: Token): LoxObject {
     if (this.values.has(name.lexeme)) {
       return this.values.get(name.lexeme)
     }
+
+    if (this.enclosing) {
+      return this.enclosing.get(name)
+    }
+
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`)
   }
 
-  public assign(name: Token, value: LoxObject) {
+  public assign(name: Token, value: LoxObject): void {
     if (this.values.has(name.lexeme)) {
       this.values.set(name.lexeme, value)
       return
     }
+
+    if (this.enclosing) {
+      this.enclosing.assign(name, value)
+      return
+    }
+
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`)
   }
 
