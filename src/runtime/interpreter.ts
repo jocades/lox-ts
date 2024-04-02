@@ -37,6 +37,8 @@ export class Interpreter
     stmt.accept(this)
   }
 
+  // -- STMT VISITORS ---
+
   executeBlock(statements: ast.Stmt[], environment: Environment): void {
     let previous = this.environment
     try {
@@ -79,6 +81,8 @@ export class Interpreter
     }
     this.environment.define(stmt.name.lexeme, value)
   }
+
+  // -- EXPR VISITORS ---
 
   visitAssignExpr(expr: ast.AssignExpr): LoxObject {
     let value = this.evaluate(expr.value)
@@ -147,6 +151,19 @@ export class Interpreter
 
   visitLiteralExpr(expr: ast.LiteralExpr): LoxObject {
     return expr.value
+  }
+
+  visitLogicalExpr(expr: ast.LogicalExpr) {
+    let left = this.evaluate(expr.left)
+
+    // check if we can short-circuit
+    if (expr.operator.type === TokenType.OR) {
+      if (this.isTruthy(left)) return left
+    } else {
+      if (!this.isTruthy(left)) return left
+    }
+
+    return this.evaluate(expr.right)
   }
 
   visitUnaryExpr(expr: ast.UnaryExpr): LoxObject {

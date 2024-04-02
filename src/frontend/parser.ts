@@ -12,6 +12,7 @@ import {
   AssignExpr,
   BlockStmt,
   IfStmt,
+  LogicalExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -50,7 +51,9 @@ import { Lox } from '../lox'
 //
 // expression     → assignment ;
 // assignment     → IDENTIFIER "=" assignment
-//                | equality ;
+//                | logic_or ;
+// logical_or     → logical_and ( "or" logical_and )* ;
+// logical_and    → equality ( "and" equality )* ;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 // term           → factor ( ( "-" | "+" ) factor )* ;
@@ -187,10 +190,10 @@ export class Parser {
 
   /**
    * assignment     → IDENTIFIER "=" assignment
-   *                | equality ;
+   *                | logic_or ;
    */
   private assignment(): Expr {
-    let expr = this.equality()
+    let expr = this.or()
 
     if (this.match(TokenType.EQUAL)) {
       let equals = this.prev()
@@ -202,6 +205,37 @@ export class Parser {
       }
 
       this.error(equals, 'Invalid assignment target.')
+    }
+
+    return expr
+  }
+
+  /**
+   * logical_or     → logical_and ( "or" logical_and )* ;
+   */
+  private or(): Expr {
+    let expr = this.and()
+
+    while (this.match(TokenType.OR)) {
+      let operator = this.prev()
+      let right = this.and()
+      expr = new LogicalExpr(expr, operator, right)
+    }
+
+    return expr
+  }
+
+  /**
+   * logical_and    → equality ( "and" equality )* ;
+   */
+
+  private and(): Expr {
+    let expr = this.equality()
+
+    while (this.match(TokenType.AND)) {
+      let operator = this.prev()
+      let right = this.equality()
+      expr = new LogicalExpr(expr, operator, right)
     }
 
     return expr
