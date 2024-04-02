@@ -9,6 +9,7 @@ export interface StmtVisitor<R> {
   visitBlockStmt(stmt: BlockStmt): R
   visitEchoStmt(stmt: EchoStmt): R
   visitExpressionStmt(stmt: ExpressionStmt): R
+  visitIfStmt(stmt: IfStmt): R
   visitLetStmt(stmt: LetStmt): R
 }
 
@@ -33,6 +34,18 @@ export class ExpressionStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitExpressionStmt(this)
+  }
+}
+
+export class IfStmt implements Stmt {
+  constructor(
+    public condition: Expr,
+    public thenBranch: Stmt,
+    public elseBranch: Stmt | null,
+  ) {}
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitIfStmt(this)
   }
 }
 

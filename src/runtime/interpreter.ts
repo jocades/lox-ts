@@ -59,6 +59,14 @@ export class Interpreter
     if (this.options.repl) console.log(this.stringify(value))
   }
 
+  visitIfStmt(stmt: ast.IfStmt): void {
+    if (this.isTruthy(this.evaluate(stmt.condition))) {
+      this.execute(stmt.thenBranch)
+    } else if (stmt.elseBranch !== null) {
+      this.execute(stmt.elseBranch)
+    }
+  }
+
   visitEchoStmt(stmt: ast.EchoStmt): void {
     let value = this.evaluate(stmt.expression)
     console.log(this.stringify(value))
@@ -111,7 +119,7 @@ export class Interpreter
         }
         throw new RuntimeError(
           expr.operator,
-          'Operands must be two numbers or two strings'
+          'Operands must be two numbers or two strings',
         )
       }
       case TokenType.SLASH: {
@@ -119,7 +127,7 @@ export class Interpreter
         if (right === 0) {
           throw new RuntimeError(
             expr.operator,
-            'Division by zero is not allowed.'
+            'Division by zero is not allowed.',
           )
         }
         return left / right
@@ -171,7 +179,7 @@ export class Interpreter
   private checkNumberOperands(
     operator: Token,
     left: LoxObject,
-    right: LoxObject
+    right: LoxObject,
   ) {
     if (typeof left === 'number' && typeof right === 'number') return
     throw new RuntimeError(operator, 'Operands must be numbers.')

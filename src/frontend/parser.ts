@@ -11,6 +11,7 @@ import {
   VariableExpr,
   AssignExpr,
   BlockStmt,
+  IfStmt,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -37,9 +38,11 @@ import { Lox } from '../lox'
 //                | statement ;
 //
 // statement      → exprStmt
+//                | ifStmt
 //                | printStmt ;
 //                | block ;
 //
+// ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 // block          → "{" declaration* "}" ;
 // exprStmt       → expression ";" ;
 // letDecl        → "let" IDENTIFIER ( "=" expression )? ";" ;
@@ -116,7 +119,7 @@ export class Parser {
 
     this.consume(
       TokenType.SEMICOLON,
-      "Expected ';' after variable declaration."
+      "Expected ';' after variable declaration.",
     )
 
     return new LetStmt(name, initializer)
@@ -128,9 +131,28 @@ export class Parser {
    */
   private statement(): Stmt {
     if (this.match(TokenType.ECHO)) return this.echoStatement()
+    if (this.match(TokenType.IF)) return this.ifStatement()
     if (this.match(TokenType.LBRACE)) return new BlockStmt(this.block())
 
     return this.expressionStatement()
+  }
+
+  /**
+   * ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
+   */
+  private ifStatement(): Stmt {
+    this.consume(TokenType.LPAREN, "Expected '(' after 'if'.")
+    let condition = this.expression()
+    this.consume(TokenType.RPAREN, "Expected ')' after if condition.")
+
+    let thenBranch = this.statement()
+    let elseBranch: Stmt | null = null
+
+    if (this.match(TokenType.ELSE)) {
+      elseBranch = this.statement()
+    }
+
+    return new IfStmt(condition, thenBranch, elseBranch)
   }
 
   private echoStatement(): Stmt {
@@ -211,7 +233,7 @@ export class Parser {
         TokenType.GREATER,
         TokenType.GREATER_EQUAL,
         TokenType.LESS,
-        TokenType.LESS_EQUAL
+        TokenType.LESS_EQUAL,
       )
     ) {
       let operator = this.prev()
@@ -339,7 +361,7 @@ export class Parser {
     return new ParseError(
       message,
       token.line,
-      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`
+      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
     )
   }
 
