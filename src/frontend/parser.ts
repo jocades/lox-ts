@@ -13,6 +13,7 @@ import {
   BlockStmt,
   IfStmt,
   LogicalExpr,
+  WhileStmt,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -40,9 +41,11 @@ import { Lox } from '../lox'
 //
 // statement      → exprStmt
 //                | ifStmt
-//                | printStmt ;
+//                | printStmt
+//                | whileStmt
 //                | block ;
 //
+// whileStmt      → "while" "(" expression ")" statement ;
 // ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 // block          → "{" declaration* "}" ;
 // exprStmt       → expression ";" ;
@@ -110,31 +113,16 @@ export class Parser {
   }
 
   /**
-   * letDecl        → "let" IDENTIFIER ( "=" expression )? ";" ;
-   */
-  private letDeclaration(): Stmt {
-    let name = this.consume(TokenType.IDENTIFIER, 'Expected variable name.')
-
-    let initializer: Expr | null = null
-    if (this.match(TokenType.EQUAL)) {
-      initializer = this.expression()
-    }
-
-    this.consume(
-      TokenType.SEMICOLON,
-      "Expected ';' after variable declaration.",
-    )
-
-    return new LetStmt(name, initializer)
-  }
-
-  /**
    * statement      → exprStmt
-   *               | printStmt ;
+   *                | ifStmt
+   *                | echoStmt
+   *                | whileStmt
+   *                | block ;
    */
   private statement(): Stmt {
-    if (this.match(TokenType.ECHO)) return this.echoStatement()
     if (this.match(TokenType.IF)) return this.ifStatement()
+    if (this.match(TokenType.ECHO)) return this.echoStatement()
+    if (this.match(TokenType.WHILE)) return this.whileStatement()
     if (this.match(TokenType.LBRACE)) return new BlockStmt(this.block())
 
     return this.expressionStatement()
@@ -162,6 +150,37 @@ export class Parser {
     let value = this.expression()
     this.consume(TokenType.SEMICOLON, "Expected ';' after value.")
     return new EchoStmt(value)
+  }
+
+  /**
+   * letDecl        → "let" IDENTIFIER ( "=" expression )? ";" ;
+   */
+  private letDeclaration(): Stmt {
+    let name = this.consume(TokenType.IDENTIFIER, 'Expected variable name.')
+
+    let initializer: Expr | null = null
+    if (this.match(TokenType.EQUAL)) {
+      initializer = this.expression()
+    }
+
+    this.consume(
+      TokenType.SEMICOLON,
+      "Expected ';' after variable declaration.",
+    )
+
+    return new LetStmt(name, initializer)
+  }
+
+  /**
+   * whileStmt      → "while" "(" expression ")" statement ;
+   */
+  private whileStatement(): Stmt {
+    this.consume(TokenType.LPAREN, "Expected '(' after 'while'.")
+    let condition = this.expression()
+    this.consume(TokenType.RPAREN, "Expected ')' after condition.")
+    let body = this.statement()
+
+    return new WhileStmt(condition, body)
   }
 
   /**

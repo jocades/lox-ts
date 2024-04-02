@@ -82,6 +82,12 @@ export class Interpreter
     this.environment.define(stmt.name.lexeme, value)
   }
 
+  visitWhileStmt(stmt: ast.WhileStmt): void {
+    while (this.isTruthy(this.evaluate(stmt.condition))) {
+      this.execute(stmt.body)
+    }
+  }
+
   // -- EXPR VISITORS ---
 
   visitAssignExpr(expr: ast.AssignExpr): LoxObject {

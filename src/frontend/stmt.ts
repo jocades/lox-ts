@@ -11,6 +11,7 @@ export interface StmtVisitor<R> {
   visitExpressionStmt(stmt: ExpressionStmt): R
   visitIfStmt(stmt: IfStmt): R
   visitLetStmt(stmt: LetStmt): R
+  visitWhileStmt(stmt: WhileStmt): R
 }
 
 export class BlockStmt implements Stmt {
@@ -57,5 +58,16 @@ export class LetStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitLetStmt(this)
+  }
+}
+
+export class WhileStmt implements Stmt {
+  constructor(
+    public condition: Expr,
+    public body: Stmt,
+  ) {}
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitWhileStmt(this)
   }
 }
