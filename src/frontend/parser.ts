@@ -13,7 +13,7 @@ import {
   BlockStmt,
 } from './ast'
 import { ParseError } from '../lib/errors'
-import { Lexer, TokenType, type Token } from './lexer'
+import { Lexer, Token, TokenType } from './lexer'
 import { Lox } from '../lox'
 
 // --- LOX EXPRESSIONS (RECURSIVE DESCENT PARSING) --- https://en.wikipedia.org/wiki/Recursive_descent_parser
@@ -116,7 +116,7 @@ export class Parser {
 
     this.consume(
       TokenType.SEMICOLON,
-      "Expected ';' after variable declaration.",
+      "Expected ';' after variable declaration."
     )
 
     return new LetStmt(name, initializer)
@@ -191,7 +191,7 @@ export class Parser {
   private equality(): Expr {
     let expr = this.comparison()
 
-    while (this.match(TokenType.EQUAL, TokenType.EQUAL_EQUAL)) {
+    while (this.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
       let operator = this.prev()
       let right = this.comparison()
       expr = new BinaryExpr(expr, operator, right)
@@ -211,7 +211,7 @@ export class Parser {
         TokenType.GREATER,
         TokenType.GREATER_EQUAL,
         TokenType.LESS,
-        TokenType.LESS_EQUAL,
+        TokenType.LESS_EQUAL
       )
     ) {
       let operator = this.prev()
@@ -339,7 +339,7 @@ export class Parser {
     return new ParseError(
       message,
       token.line,
-      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
+      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`
     )
   }
 

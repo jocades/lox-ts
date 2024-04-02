@@ -31,12 +31,12 @@ export class Lox {
         continue
       }
 
-      this.run(input)
+      this.run(input, true)
       this.hadError = false
     }
   }
 
-  static run(source: string): void {
+  static run(source: string, repl = false): void {
     const lexer = new Lexer(source)
     const tokens = lexer.lex()
 
@@ -49,7 +49,7 @@ export class Lox {
     console.log('[AST]', statements)
     // console.log(new AstPrinter().print(statements!))
 
-    this.interpreter.interpret(statements!)
+    this.interpreter.interpret(statements, { repl })
   }
 
   // --- ERROR HANDLING ---
@@ -58,7 +58,7 @@ export class Lox {
     this.report(
       token.line,
       token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
-      message,
+      message
     )
   }
 

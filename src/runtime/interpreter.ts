@@ -5,19 +5,27 @@ import { Lox } from '@/lox'
 import type { LoxObject } from './values'
 import { Environment } from './environment'
 
+// add support to print expression when in REPL mode
+interface InterpreterOptions {
+  repl?: boolean
+}
+
 export class Interpreter
   implements ast.ExprVisitor<LoxObject>, ast.StmtVisitor<void>
 {
   private environment = new Environment()
+  private options: InterpreterOptions = { repl: false }
 
-  public interpret(statements: ast.Stmt[]): void {
-    try {
-      for (let statement of statements) {
+  public interpret(statements: ast.Stmt[], options?: InterpreterOptions): void {
+    this.setup(options)
+
+    for (let statement of statements) {
+      try {
         this.execute(statement)
+      } catch (err) {
+        if (err instanceof RuntimeError) Lox.runtimeError(err)
+        else throw err
       }
-    } catch (err) {
-      if (err instanceof RuntimeError) Lox.runtimeError(err)
-      else throw err
     }
   }
 
@@ -47,7 +55,8 @@ export class Interpreter
   }
 
   visitExpressionStmt(stmt: ast.ExpressionStmt): void {
-    this.evaluate(stmt.expression)
+    let value = this.evaluate(stmt.expression)
+    if (this.options.repl) console.log(this.stringify(value))
   }
 
   visitEchoStmt(stmt: ast.EchoStmt): void {
@@ -102,7 +111,7 @@ export class Interpreter
         }
         throw new RuntimeError(
           expr.operator,
-          'Operands must be two numbers or two strings',
+          'Operands must be two numbers or two strings'
         )
       }
       case TokenType.SLASH: {
@@ -110,7 +119,7 @@ export class Interpreter
         if (right === 0) {
           throw new RuntimeError(
             expr.operator,
-            'Division by zero is not allowed.',
+            'Division by zero is not allowed.'
           )
         }
         return left / right
@@ -162,7 +171,7 @@ export class Interpreter
   private checkNumberOperands(
     operator: Token,
     left: LoxObject,
-    right: LoxObject,
+    right: LoxObject
   ) {
     if (typeof left === 'number' && typeof right === 'number') return
     throw new RuntimeError(operator, 'Operands must be numbers.')
@@ -180,6 +189,11 @@ export class Interpreter
     if (x === null) return false
 
     return x === y
+  }
+
+  private setup(options?: InterpreterOptions): void {
+    if (!options) return
+    this.options = { ...this.options, ...options }
   }
 
   private stringify(object: LoxObject) {
