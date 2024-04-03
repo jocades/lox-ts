@@ -5,7 +5,7 @@ import { Lox } from '@/lox'
 import { LoxCallable, LoxFunction, type LoxObject } from './values'
 import { Environment } from './environment'
 import { Break } from './exceptions'
-import { LoxClockFn, LoxLenFn, LoxTypeFn } from './gobals'
+import { LoxClockFn, LoxLenFn, LoxTypeFn } from './globals'
 
 interface InterpreterOptions {
   repl?: boolean
