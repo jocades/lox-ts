@@ -14,6 +14,7 @@ import {
   IfStmt,
   LogicalExpr,
   WhileStmt,
+  BreakStmt,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -40,11 +41,15 @@ import { Lox } from '../lox'
 //                | statement ;
 //
 // statement      → exprStmt
+//                | forStmt
 //                | ifStmt
 //                | printStmt
 //                | whileStmt
 //                | block ;
 //
+// forStmt        → "for "("  ( varDecl | exprStmt | ";" )
+//                  expression? ";"
+//                  expression? statement ;
 // whileStmt      → "while" "(" expression ")" statement ;
 // ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 // block          → "{" declaration* "}" ;
@@ -120,12 +125,71 @@ export class Parser {
    *                | block ;
    */
   private statement(): Stmt {
+    if (this.match(TokenType.FOR)) return this.forStatement()
     if (this.match(TokenType.IF)) return this.ifStatement()
     if (this.match(TokenType.ECHO)) return this.echoStatement()
     if (this.match(TokenType.WHILE)) return this.whileStatement()
+    if (this.match(TokenType.BREAK)) return this.breakStatement()
     if (this.match(TokenType.LBRACE)) return new BlockStmt(this.block())
 
     return this.expressionStatement()
+  }
+
+  /**
+   * forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+   *                 expression? ";"
+   *                 expression? ")" statement ;
+   *
+   * @example for (let i = 0; i < 10; i = i + 1) echo i;
+   */
+  private forStatement(): Stmt {
+    this.consume(TokenType.LPAREN, "Expected '(' after 'for'.")
+
+    let initializer: Stmt | null
+    if (this.match(TokenType.SEMICOLON)) {
+      initializer = null
+    } else if (this.match(TokenType.LET)) {
+      initializer = this.letDeclaration()
+    } else {
+      initializer = this.expressionStatement()
+    }
+
+    let condition: Expr | null = null
+    if (!this.check(TokenType.SEMICOLON)) {
+      condition = this.expression()
+    }
+    this.consume(TokenType.SEMICOLON, "Expected ';' after looop condition.")
+
+    let increment: Expr | null = null
+    if (!this.check(TokenType.RPAREN)) {
+      increment = this.expression()
+    }
+    this.consume(TokenType.RPAREN, "Expected, ')' after for clauses.")
+
+    let body = this.statement()
+
+    // desugaring syntactic sugar so that the interpreter already recognizes the nodes.
+    // for (let i = 0; i < 10; i = i + 1) echo i;
+    // same as:
+    // {
+    //   let i = 0;
+    //   while (i < 10) {
+    //     echo i;
+    //     i = i + 1;
+    //   }
+    // }
+    if (increment !== null) {
+      body = new BlockStmt([body, new ExpressionStmt(increment)])
+    }
+
+    if (condition === null) condition = new LiteralExpr(true)
+    body = new WhileStmt(condition, body)
+
+    if (initializer !== null) {
+      body = new BlockStmt([initializer, body])
+    }
+
+    return body
   }
 
   /**
@@ -181,6 +245,11 @@ export class Parser {
     let body = this.statement()
 
     return new WhileStmt(condition, body)
+  }
+
+  private breakStatement(): Stmt {
+    this.consume(TokenType.SEMICOLON, "Expected ';' after 'break'.")
+    return new BreakStmt(this.prev())
   }
 
   /**

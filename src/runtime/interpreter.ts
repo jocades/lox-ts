@@ -10,6 +10,12 @@ interface InterpreterOptions {
   repl?: boolean
 }
 
+class BreakError extends Error {
+  constructor(public token: Token) {
+    super('Break statement used outside of loop.')
+  }
+}
+
 export class Interpreter
   implements ast.ExprVisitor<LoxObject>, ast.StmtVisitor<void>
 {
@@ -23,8 +29,9 @@ export class Interpreter
       try {
         this.execute(statement)
       } catch (err) {
-        if (err instanceof RuntimeError) Lox.runtimeError(err)
-        else throw err
+        if (err instanceof RuntimeError || err instanceof BreakError) {
+          Lox.runtimeError(err)
+        } else throw err
       }
     }
   }
@@ -56,6 +63,10 @@ export class Interpreter
     this.executeBlock(stmt.statements, new Environment(this.environment))
   }
 
+  visitBreakStmt(stmt: ast.BreakStmt): void {
+    throw new BreakError(stmt.keyword)
+  }
+
   visitExpressionStmt(stmt: ast.ExpressionStmt): void {
     let value = this.evaluate(stmt.expression)
     if (this.options.repl) console.log(this.stringify(value))
@@ -84,7 +95,12 @@ export class Interpreter
 
   visitWhileStmt(stmt: ast.WhileStmt): void {
     while (this.isTruthy(this.evaluate(stmt.condition))) {
-      this.execute(stmt.body)
+      try {
+        this.execute(stmt.body)
+      } catch (err) {
+        if (err instanceof BreakError) break
+        throw err
+      }
     }
   }
 
@@ -129,7 +145,7 @@ export class Interpreter
         }
         throw new RuntimeError(
           expr.operator,
-          'Operands must be two numbers or two strings',
+          'Operands must be two numbers or two strings'
         )
       }
       case TokenType.SLASH: {
@@ -137,7 +153,7 @@ export class Interpreter
         if (right === 0) {
           throw new RuntimeError(
             expr.operator,
-            'Division by zero is not allowed.',
+            'Division by zero is not allowed.'
           )
         }
         return left / right
@@ -202,7 +218,7 @@ export class Interpreter
   private checkNumberOperands(
     operator: Token,
     left: LoxObject,
-    right: LoxObject,
+    right: LoxObject
   ) {
     if (typeof left === 'number' && typeof right === 'number') return
     throw new RuntimeError(operator, 'Operands must be numbers.')

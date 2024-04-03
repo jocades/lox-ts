@@ -30,6 +30,7 @@ export enum TokenType {
 
   // Keywords.
   AND,
+  BREAK,
   CLASS,
   ECHO,
   ELSE,
@@ -54,6 +55,7 @@ export enum TokenType {
  */
 const KEYWORDS: Record<string, TokenType> = {
   and: TokenType.AND,
+  break: TokenType.BREAK,
   class: TokenType.CLASS,
   echo: TokenType.ECHO,
   else: TokenType.ELSE,

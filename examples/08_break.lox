@@ -1,0 +1,29 @@
+for (let i = 0; i < 2; i = i + 1) {
+  if (true) {
+    echo "true";
+  }
+
+  if (1 == 1) {
+    echo "break!";
+    break;
+  }
+
+  echo "unreachable";
+}
+
+let count = 1;
+while (count < 3) {
+
+    for (count; count < 2; count = count + 1) {
+      echo "for break!";
+      break;
+    }
+
+  echo "while break";
+  break;
+  count = count +1;
+}
+
+{
+ break; // error
+}
