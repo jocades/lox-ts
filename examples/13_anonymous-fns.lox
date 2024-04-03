@@ -1,0 +1,13 @@
+fn whichFn(cb) {
+  echo cb;
+}
+
+whichFn(fn (b) {
+ echo b;
+});
+
+fn named(a) { echo a; }
+whichFn(named);
+//
+// <fn>
+// <fn named>

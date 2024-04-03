@@ -79,8 +79,11 @@ export class Interpreter
   }
 
   visitFunctionStmt(stmt: ast.FunctionStmt): void {
-    let fn = new LoxFunction(stmt)
-    this.environment.define(stmt.name.lexeme, fn)
+    let name = stmt.name.lexeme
+    this.environment.define(
+      name,
+      new LoxFunction(name, stmt.fn, this.environment),
+    )
   }
 
   visitIfStmt(stmt: ast.IfStmt): void {
@@ -151,9 +154,11 @@ export class Interpreter
         if (typeof left === 'number' && typeof right === 'number') {
           return left + right
         }
-        if (typeof left === 'string' && typeof right === 'string') {
-          return left + right
+        if (typeof left === 'string' || typeof right === 'string') {
+          // allow string concatenation with different types
+          return this.stringify(left) + this.stringify(right)
         }
+
         throw new RuntimeError(
           expr.operator,
           'Operands must be two numbers or two strings',
@@ -194,6 +199,10 @@ export class Interpreter
     }
 
     return callee.call(this, args)
+  }
+
+  visitFunctionExpr(expr: ast.FunctionExpr): LoxObject {
+    return new LoxFunction(null, expr, this.environment)
   }
 
   visitGroupingExpr(expr: ast.GroupingExpr): LoxObject {

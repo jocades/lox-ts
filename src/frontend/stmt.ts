@@ -1,4 +1,4 @@
-import type { Expr } from './expr'
+import type { Expr, FunctionExpr } from './expr'
 import type { Token } from './lexer'
 
 export interface Stmt {
@@ -52,8 +52,7 @@ export class ExpressionStmt implements Stmt {
 export class FunctionStmt implements Stmt {
   constructor(
     public name: Token,
-    public params: Token[],
-    public body: Stmt[],
+    public fn: FunctionExpr,
   ) {}
 
   accept<R>(visitor: StmtVisitor<R>): R {

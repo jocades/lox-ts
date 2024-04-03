@@ -18,6 +18,7 @@ import {
   CallExpr,
   FunctionStmt,
   ReturnStmt,
+  FunctionExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -125,7 +126,10 @@ export class Parser {
    *                | statement ;
    */
   private declaration(): Stmt {
-    if (this.match(TokenType.FN)) return this.fnDeclaration('function')
+    if (this.check(TokenType.FN) && this.checkNext(TokenType.IDENTIFIER)) {
+      this.consume(TokenType.FN, 'Expected function declaration.')
+      return this.fnDeclaration('function')
+    }
     if (this.match(TokenType.LET)) return this.letDeclaration()
 
     return this.statement()
@@ -316,6 +320,10 @@ export class Parser {
       TokenType.IDENTIFIER,
       `Expected ${kind} after name.`,
     )
+    return new FunctionStmt(name, this.fnBody(kind))
+  }
+
+  private fnBody(kind: string): FunctionExpr {
     this.consume(TokenType.LPAREN, `Expected '(' after ${kind} name.`)
 
     let parameters: Token[] = []
@@ -334,7 +342,7 @@ export class Parser {
     this.consume(TokenType.LBRACE, `Expected '{' before ${kind} body.`)
     let body = this.block()
 
-    return new FunctionStmt(name, parameters, body)
+    return new FunctionExpr(parameters, body)
   }
 
   /**
@@ -522,6 +530,11 @@ export class Parser {
       return new VariableExpr(this.prev())
     }
 
+    // separate from fnDecl to allow lambda functions
+    if (this.match(TokenType.FN)) {
+      return this.fnBody('function')
+    }
+
     if (this.match(TokenType.LPAREN)) {
       let expr = this.expression()
       this.consume(TokenType.RPAREN, "Expected ')' after expression.")
@@ -554,6 +567,12 @@ export class Parser {
   private check(type: TokenType): boolean {
     if (this.eof()) return false
     return this.peek().type == type
+  }
+
+  private checkNext(type: TokenType): boolean {
+    if (this.eof()) return false
+    if (this.tokens[this.current + 1].type == TokenType.EOF) return false
+    return this.tokens[this.current + 1].type == type
   }
 
   private advance(): Token {

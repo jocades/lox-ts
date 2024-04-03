@@ -1,6 +1,7 @@
 import type { FunctionStmt } from '@/frontend/stmt'
 import type { Interpreter } from './interpreter'
 import { Environment } from './environment'
+import type { FunctionExpr } from '@/frontend/expr'
 // import { Return } from './exceptions'
 
 /**
@@ -39,7 +40,11 @@ export class LoxFunction extends LoxCallable {
     }
   }
 
-  constructor(private declaration: FunctionStmt) {
+  constructor(
+    private name: string | null,
+    private declaration: FunctionExpr,
+    private closure: Environment,
+  ) {
     super()
   }
 
@@ -48,7 +53,7 @@ export class LoxFunction extends LoxCallable {
   }
 
   call(interpreter: Interpreter, args: LoxObject[]): LoxObject {
-    let environment = new Environment(interpreter.globals)
+    let environment = new Environment(this.closure)
 
     // bind arguments to parameters
     for (let i = 0; i < this.declaration.params.length; i++) {
@@ -66,6 +71,7 @@ export class LoxFunction extends LoxCallable {
   }
 
   toString(): string {
-    return `<fn ${this.declaration.name.lexeme}>`
+    if (!this.name) return '<fn>'
+    return `<fn> ${this.name}`
   }
 }

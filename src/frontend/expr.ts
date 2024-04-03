@@ -1,5 +1,6 @@
 import type { LoxObject } from '@/runtime/values'
 import { Token } from './lexer'
+import type { Stmt } from './stmt'
 
 // Backus-Naur form (BNF) grammar for the AST nodes of the language.
 
@@ -64,6 +65,7 @@ export interface ExprVisitor<R> {
   visitAssignExpr(expr: AssignExpr): R
   visitBinaryExpr(expr: BinaryExpr): R
   visitCallExpr(expr: CallExpr): R
+  visitFunctionExpr(expr: FunctionExpr): R
   visitGroupingExpr(expr: GroupingExpr): R
   visitLiteralExpr(expr: LiteralExpr): R
   visitLogicalExpr(expr: LogicalExpr): R
@@ -107,6 +109,18 @@ export class CallExpr implements Expr {
 
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitCallExpr(this)
+  }
+}
+
+// allow for anonymous functions
+export class FunctionExpr implements Expr {
+  constructor(
+    public params: Token[],
+    public body: Stmt[],
+  ) {}
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitFunctionExpr(this)
   }
 }
 
