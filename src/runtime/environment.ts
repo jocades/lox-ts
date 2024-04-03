@@ -12,7 +12,7 @@ export class Environment {
 
   public get(name: Token): LoxObject {
     if (this.values.has(name.lexeme)) {
-      return this.values.get(name.lexeme)
+      return this.values.get(name.lexeme)!
     }
 
     if (this.enclosing) {

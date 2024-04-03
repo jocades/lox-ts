@@ -1,0 +1,10 @@
+
+let N = 1000000;
+let start = clock();
+
+for (let i = 0; i < N; i = i + 1) {}
+
+// TODO: turn echo statement into a native function call.
+echo "Took:";
+echo clock() - start;
+echo "ms";

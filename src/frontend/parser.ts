@@ -15,6 +15,7 @@ import {
   LogicalExpr,
   WhileStmt,
   BreakStmt,
+  CallExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -33,7 +34,7 @@ import { Lox } from '../lox'
 // * or +            while or for loop.
 // ?                 if statement.
 
-// GRAMMAR RULES:
+// GRAMMAR RULES (Backus-Naur form | BNF):
 // -------------
 // program        → declaration* EOF ;
 //
@@ -68,6 +69,8 @@ import { Lox } from '../lox'
 // factor         → unary ( ( "/" | "*" ) unary )* ;
 // unary          → ( "!" | "-" ) unary
 //                | primary ;
+// call           → primary ( "(" arguments? ")" )* ; // this "operator" has higher precedence than unary
+// arguments      → expression ( "," expression )* ;
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
 //                | "(" expression ")"
 //                | IDENTIFIER ;
@@ -406,7 +409,41 @@ export class Parser {
       return new UnaryExpr(operator, right)
     }
 
-    return this.primary()
+    return this.call()
+  }
+
+  /**
+   * call           → primary ( "(" arguments? ")" )* ;
+   */
+  private call(): Expr {
+    let expr = this.primary()
+
+    while (true) {
+      if (this.match(TokenType.LPAREN)) {
+        expr = this.finishCall(expr)
+      } else {
+        break
+      }
+    }
+
+    return expr
+  }
+
+  private finishCall(callee: Expr): Expr {
+    let args: Expr[] = []
+
+    if (!this.check(TokenType.RPAREN)) {
+      do {
+        if (args.length >= 255) {
+          this.error(this.peek(), 'Cannot have more than 255 arguments.')
+        }
+        args.push(this.expression())
+      } while (this.match(TokenType.COMMA))
+    }
+
+    let paren = this.consume(TokenType.RPAREN, "Expected ')' after arguments.")
+
+    return new CallExpr(callee, paren, args)
   }
 
   /**

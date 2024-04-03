@@ -1,26 +1,24 @@
 import * as ast from '@/frontend/ast'
 import { Token, TokenType } from '@/frontend/lexer'
-import { RuntimeError } from '@/lib/errors'
+import { BreakError, RuntimeError } from '@/lib/errors'
 import { Lox } from '@/lox'
-import type { LoxObject } from './values'
+import { LoxCallable, LoxClockFn, type LoxObject } from './values'
 import { Environment } from './environment'
 
-// add support to print expression when in REPL mode
 interface InterpreterOptions {
   repl?: boolean
-}
-
-class BreakError extends Error {
-  constructor(public token: Token) {
-    super('Break statement used outside of loop.')
-  }
 }
 
 export class Interpreter
   implements ast.ExprVisitor<LoxObject>, ast.StmtVisitor<void>
 {
-  private environment = new Environment()
+  globals = new Environment()
+  private environment = this.globals
   private options: InterpreterOptions = { repl: false }
+
+  constructor() {
+    this.globals.define('clock', new LoxClockFn())
+  }
 
   public interpret(statements: ast.Stmt[], options?: InterpreterOptions): void {
     this.setup(options)
@@ -64,7 +62,7 @@ export class Interpreter
   }
 
   visitBreakStmt(stmt: ast.BreakStmt): void {
-    throw new BreakError(stmt.keyword)
+    throw new BreakError('Break statement used outside of loop.', stmt.keyword)
   }
 
   visitExpressionStmt(stmt: ast.ExpressionStmt): void {
@@ -135,7 +133,7 @@ export class Interpreter
         return (left as number) <= (right as number)
       case TokenType.MINUS:
         this.checkNumberOperands(expr.operator, left, right)
-        return left - right
+        return (left as number) - (right as number)
       case TokenType.PLUS: {
         if (typeof left === 'number' && typeof right === 'number') {
           return left + right
@@ -145,7 +143,7 @@ export class Interpreter
         }
         throw new RuntimeError(
           expr.operator,
-          'Operands must be two numbers or two strings'
+          'Operands must be two numbers or two strings',
         )
       }
       case TokenType.SLASH: {
@@ -153,18 +151,36 @@ export class Interpreter
         if (right === 0) {
           throw new RuntimeError(
             expr.operator,
-            'Division by zero is not allowed.'
+            'Division by zero is not allowed.',
           )
         }
-        return left / right
+        return (left as number) / (right as number)
       }
       case TokenType.STAR:
         this.checkNumberOperands(expr.operator, left, right)
-        return left * right
+        return (left as number) * (right as number)
     }
 
     // unreachable
     return null
+  }
+
+  visitCallExpr(expr: ast.CallExpr): LoxObject {
+    let callee = this.evaluate(expr.callee)
+    let args = expr.args.map((arg) => this.evaluate(arg))
+
+    if (!(callee instanceof LoxCallable)) {
+      throw new RuntimeError(expr.paren, 'Can only call functions and classes.')
+    }
+
+    if (args.length !== callee.arity()) {
+      throw new RuntimeError(
+        expr.paren,
+        `Expected ${callee.arity()} arguments but got ${args.length}.`,
+      )
+    }
+
+    return callee.call(this, args)
   }
 
   visitGroupingExpr(expr: ast.GroupingExpr): LoxObject {
@@ -197,7 +213,7 @@ export class Interpreter
 
       case TokenType.MINUS:
         this.checkNumberOperand(expr.operator, right)
-        return -right
+        return -(right as number)
     }
 
     // unreachable
@@ -218,7 +234,7 @@ export class Interpreter
   private checkNumberOperands(
     operator: Token,
     left: LoxObject,
-    right: LoxObject
+    right: LoxObject,
   ) {
     if (typeof left === 'number' && typeof right === 'number') return
     throw new RuntimeError(operator, 'Operands must be numbers.')

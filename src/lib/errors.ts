@@ -1,26 +1,33 @@
 import type { Token } from '../frontend/lexer'
 
-export class ParseError {
+export class ParseError extends Error {
   name = 'ParseError'
   line?: number
   where?: string
-  message: string
 
   constructor(message: string, line?: number, where?: string) {
-    this.message = message
+    super(message)
     this.line = line
     this.where = where
   }
 }
 
-export class RuntimeError {
+export class RuntimeError extends Error {
   name = 'RuntimeError'
   token: Token
-  message: string
 
   constructor(token: Token, message: string) {
-    // super(message)
-    this.message = message
+    super(message)
+    this.token = token
+  }
+}
+
+export class BreakError extends Error {
+  name = 'BreakError'
+  token: Token
+
+  constructor(message: string, token: Token) {
+    super(message)
     this.token = token
   }
 }
