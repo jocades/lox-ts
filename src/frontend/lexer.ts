@@ -1,27 +1,15 @@
+// prettier-ignore
 export enum TokenType {
   // Single-character tokens.
-  LPAREN,
-  RPAREN,
-  LBRACE,
-  RBRACE,
-  CARET,
-  COMMA,
-  DOT,
-  MINUS,
-  PLUS,
-  SEMICOLON,
-  SLASH,
-  STAR,
+  LPAREN, RPAREN, LBRACE, RBRACE,
+  CARET, COMMA, DOT, MINUS, PLUS,
+  SEMICOLON, SLASH, STAR,
 
   // One or two character tokens.
-  BANG,
-  BANG_EQUAL,
-  EQUAL,
-  EQUAL_EQUAL,
-  GREATER,
-  GREATER_EQUAL,
-  LESS,
-  LESS_EQUAL,
+  BANG, BANG_EQUAL,
+  EQUAL, EQUAL_EQUAL,
+  GREATER, GREATER_EQUAL,
+  LESS, LESS_EQUAL,
 
   // Literals.
   IDENTIFIER,
@@ -29,23 +17,9 @@ export enum TokenType {
   NUMBER,
 
   // Keywords.
-  AND,
-  BREAK,
-  CLASS,
-  ECHO,
-  ELSE,
-  FALSE,
-  FN,
-  FOR,
-  IF,
-  LET,
-  NIL,
-  OR,
-  RETURN,
-  SUPER,
-  THIS,
-  TRUE,
-  WHILE,
+  AND, BREAK, CLASS, ECHO, ELSE, FALSE,
+  FN, FOR, IF, LET, NIL, OR, RETURN,
+  SUPER, THIS, TRUE, WHILE,
 
   EOF,
 }

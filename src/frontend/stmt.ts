@@ -10,6 +10,7 @@ export interface StmtVisitor<R> {
   visitBreakStmt(stmt: BreakStmt): R
   visitEchoStmt(stmt: EchoStmt): R
   visitExpressionStmt(stmt: ExpressionStmt): R
+  visitFunctionStmt(stmt: FunctionStmt): R
   visitIfStmt(stmt: IfStmt): R
   visitLetStmt(stmt: LetStmt): R
   visitWhileStmt(stmt: WhileStmt): R
@@ -44,6 +45,18 @@ export class ExpressionStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitExpressionStmt(this)
+  }
+}
+
+export class FunctionStmt implements Stmt {
+  constructor(
+    public name: Token,
+    public params: Token[],
+    public body: Stmt[],
+  ) {}
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitFunctionStmt(this)
   }
 }
 

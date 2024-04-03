@@ -2,7 +2,7 @@ import * as ast from '@/frontend/ast'
 import { Token, TokenType } from '@/frontend/lexer'
 import { BreakError, RuntimeError } from '@/lib/errors'
 import { Lox } from '@/lox'
-import { LoxCallable, LoxClockFn, type LoxObject } from './values'
+import { LoxCallable, LoxClockFn, LoxFunction, type LoxObject } from './values'
 import { Environment } from './environment'
 
 interface InterpreterOptions {
@@ -62,12 +62,17 @@ export class Interpreter
   }
 
   visitBreakStmt(stmt: ast.BreakStmt): void {
-    throw new BreakError('Break statement used outside of loop.', stmt.keyword)
+    throw new BreakError(stmt.keyword, 'Break statement used outside of loop.')
   }
 
   visitExpressionStmt(stmt: ast.ExpressionStmt): void {
     let value = this.evaluate(stmt.expression)
     if (this.options.repl) console.log(this.stringify(value))
+  }
+
+  visitFunctionStmt(stmt: ast.FunctionStmt): void {
+    let fn = new LoxFunction(stmt)
+    this.environment.define(stmt.name.lexeme, fn)
   }
 
   visitIfStmt(stmt: ast.IfStmt): void {
@@ -259,7 +264,7 @@ export class Interpreter
     this.options = { ...this.options, ...options }
   }
 
-  private stringify(object: LoxObject) {
+  public stringify(object: LoxObject) {
     if (object === null) return 'nil'
 
     if (typeof object === 'number') {

@@ -43,6 +43,7 @@ export class Lox {
     const parser = new Parser(tokens)
     const statements = parser.parse()
 
+    console.log('[TOKENS]', tokens)
     // stop if there was a syntax error
     if (this.hadError) return
 
@@ -58,7 +59,7 @@ export class Lox {
     this.report(
       token.line,
       token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
-      message
+      message,
     )
   }
 

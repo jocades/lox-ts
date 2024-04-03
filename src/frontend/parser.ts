@@ -16,6 +16,7 @@ import {
   WhileStmt,
   BreakStmt,
   CallExpr,
+  FunctionStmt,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -38,8 +39,14 @@ import { Lox } from '../lox'
 // -------------
 // program        → declaration* EOF ;
 //
-// declaration    → letDecl
+// declaration    → fnDecl,
+//                | letDecl
 //                | statement ;
+//
+// fnDecl         → "fn" function ;
+// function       → IDENTIFIER "(" parameters? ")" block ;
+// parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
+// letDecl        → "let" IDENTIFIER ( "=" expression )? ";" ;
 //
 // statement      → exprStmt
 //                | forStmt
@@ -48,19 +55,19 @@ import { Lox } from '../lox'
 //                | whileStmt
 //                | block ;
 //
+//
 // forStmt        → "for "("  ( varDecl | exprStmt | ";" )
 //                  expression? ";"
 //                  expression? statement ;
 // whileStmt      → "while" "(" expression ")" statement ;
 // ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 // block          → "{" declaration* "}" ;
-// exprStmt       → expression ";" ;
-// letDecl        → "let" IDENTIFIER ( "=" expression )? ";" ;
 // printStmt      → "echo" expression ";" ;
+// exprStmt       → expression ";" ;
 //
 // expression     → assignment ;
 // assignment     → IDENTIFIER "=" assignment
-//                | logic_or ;
+//                | logical_or ;
 // logical_or     → logical_and ( "or" logical_and )* ;
 // logical_and    → equality ( "and" equality )* ;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -115,6 +122,7 @@ export class Parser {
    *                | statement ;
    */
   private declaration(): Stmt {
+    if (this.match(TokenType.FN)) return this.fnDeclaration('function')
     if (this.match(TokenType.LET)) return this.letDeclaration()
 
     return this.statement()
@@ -264,8 +272,8 @@ export class Parser {
     while (!this.check(TokenType.RBRACE) && !this.eof()) {
       statements.push(this.declaration())
     }
-
     this.consume(TokenType.RBRACE, "Expected '}' after block.")
+
     return statements
   }
 
@@ -277,6 +285,37 @@ export class Parser {
     let expr = this.expression()
     this.consume(TokenType.SEMICOLON, "Expected ';' after expression.")
     return new ExpressionStmt(expr)
+  }
+
+  /**
+   * fnDecl        → "fn" function ;
+   * function      → IDENTIFIER "(" parameters? ")" block ;
+   * parameters    → IDENTIFIER ( "," IDENTIFIER )* ;
+   */
+  private fnDeclaration(kind: string): Stmt {
+    let name = this.consume(
+      TokenType.IDENTIFIER,
+      `Expected ${kind} after name.`,
+    )
+    this.consume(TokenType.LPAREN, `Expected '(' after ${kind} name.`)
+
+    let parameters: Token[] = []
+    if (!this.check(TokenType.RPAREN)) {
+      do {
+        if (parameters.length >= 255) {
+          this.error(this.peek(), 'Cannot have more than 255 parameters.')
+        }
+        parameters.push(
+          this.consume(TokenType.IDENTIFIER, 'Expected parameter name.'),
+        )
+      } while (this.match(TokenType.COMMA))
+    }
+    this.consume(TokenType.RPAREN, "Expected ')' after parameters.")
+
+    this.consume(TokenType.LBRACE, `Expected '{' before ${kind} body.`)
+    let body = this.block()
+
+    return new FunctionStmt(name, parameters, body)
   }
 
   /**

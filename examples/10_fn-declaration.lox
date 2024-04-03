@@ -1,0 +1,5 @@
+fn sayHi(first, last) {
+  echo "Hi, " + first + " " + last + "!";
+}
+
+sayHi("Dear", "Reader");

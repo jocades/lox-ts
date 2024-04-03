@@ -24,6 +24,7 @@ export class Environment {
 
   public assign(name: Token, value: LoxObject): void {
     if (this.values.has(name.lexeme)) {
+      // allow shadowing in the same scope
       this.values.set(name.lexeme, value)
       return
     }

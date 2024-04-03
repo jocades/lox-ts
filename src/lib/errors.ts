@@ -26,7 +26,7 @@ export class BreakError extends Error {
   name = 'BreakError'
   token: Token
 
-  constructor(message: string, token: Token) {
+  constructor(token: Token, message: string) {
     super(message)
     this.token = token
   }
