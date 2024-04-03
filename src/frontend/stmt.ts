@@ -13,6 +13,7 @@ export interface StmtVisitor<R> {
   visitFunctionStmt(stmt: FunctionStmt): R
   visitIfStmt(stmt: IfStmt): R
   visitLetStmt(stmt: LetStmt): R
+  visitReturnStmt(stmt: ReturnStmt): R
   visitWhileStmt(stmt: WhileStmt): R
 }
 
@@ -80,6 +81,17 @@ export class LetStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitLetStmt(this)
+  }
+}
+
+export class ReturnStmt implements Stmt {
+  constructor(
+    public keyword: Token,
+    public value: Expr | null,
+  ) {}
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitReturnStmt(this)
   }
 }
 

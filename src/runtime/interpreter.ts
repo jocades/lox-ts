@@ -1,9 +1,10 @@
 import * as ast from '@/frontend/ast'
 import { Token, TokenType } from '@/frontend/lexer'
-import { BreakError, RuntimeError } from '@/lib/errors'
+import { RuntimeError } from '@/lib/errors'
 import { Lox } from '@/lox'
 import { LoxCallable, LoxClockFn, LoxFunction, type LoxObject } from './values'
 import { Environment } from './environment'
+import { Break } from './exceptions'
 
 interface InterpreterOptions {
   repl?: boolean
@@ -27,7 +28,7 @@ export class Interpreter
       try {
         this.execute(statement)
       } catch (err) {
-        if (err instanceof RuntimeError || err instanceof BreakError) {
+        if (err instanceof RuntimeError || err instanceof Break) {
           Lox.runtimeError(err)
         } else throw err
       }
@@ -62,12 +63,19 @@ export class Interpreter
   }
 
   visitBreakStmt(stmt: ast.BreakStmt): void {
-    throw new BreakError(stmt.keyword, 'Break statement used outside of loop.')
+    throw new Break(stmt.keyword, 'Break statement used outside of loop.')
   }
 
   visitExpressionStmt(stmt: ast.ExpressionStmt): void {
     let value = this.evaluate(stmt.expression)
     if (this.options.repl) console.log(this.stringify(value))
+  }
+
+  visitReturnStmt(stmt: ast.ReturnStmt): void {
+    let value: LoxObject = null
+    if (stmt.value !== null) value = this.evaluate(stmt.value)
+
+    throw new LoxFunction.Return(value)
   }
 
   visitFunctionStmt(stmt: ast.FunctionStmt): void {
@@ -101,7 +109,7 @@ export class Interpreter
       try {
         this.execute(stmt.body)
       } catch (err) {
-        if (err instanceof BreakError) break
+        if (err instanceof Break) break
         throw err
       }
     }

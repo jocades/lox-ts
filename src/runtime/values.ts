@@ -1,6 +1,7 @@
 import type { FunctionStmt } from '@/frontend/stmt'
 import type { Interpreter } from './interpreter'
 import { Environment } from './environment'
+// import { Return } from './exceptions'
 
 /**
  * Represents a Lox value at runtime.
@@ -28,6 +29,16 @@ export class LoxClockFn extends LoxCallable {
 }
 
 export class LoxFunction extends LoxCallable {
+  static Return = class Return extends Error {
+    name = 'ReturnException'
+    value: LoxObject
+
+    constructor(value: LoxObject) {
+      super()
+      this.value = value
+    }
+  }
+
   constructor(private declaration: FunctionStmt) {
     super()
   }
@@ -46,7 +57,11 @@ export class LoxFunction extends LoxCallable {
       environment.define(param.lexeme, arg)
     }
 
-    interpreter.executeBlock(this.declaration.body, environment)
+    try {
+      interpreter.executeBlock(this.declaration.body, environment)
+    } catch (err) {
+      if (err instanceof LoxFunction.Return) return err.value
+    }
     return null
   }
 

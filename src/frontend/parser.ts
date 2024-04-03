@@ -17,6 +17,7 @@ import {
   BreakStmt,
   CallExpr,
   FunctionStmt,
+  ReturnStmt,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -52,10 +53,12 @@ import { Lox } from '../lox'
 //                | forStmt
 //                | ifStmt
 //                | printStmt
+//                | returnStmt
 //                | whileStmt
 //                | block ;
 //
 //
+// returnStmt     → "return" expression? ";" ;
 // forStmt        → "for "("  ( varDecl | exprStmt | ";" )
 //                  expression? ";"
 //                  expression? statement ;
@@ -139,6 +142,7 @@ export class Parser {
     if (this.match(TokenType.FOR)) return this.forStatement()
     if (this.match(TokenType.IF)) return this.ifStatement()
     if (this.match(TokenType.ECHO)) return this.echoStatement()
+    if (this.match(TokenType.RETURN)) return this.returnStatement()
     if (this.match(TokenType.WHILE)) return this.whileStatement()
     if (this.match(TokenType.BREAK)) return this.breakStatement()
     if (this.match(TokenType.LBRACE)) return new BlockStmt(this.block())
@@ -225,6 +229,21 @@ export class Parser {
     let value = this.expression()
     this.consume(TokenType.SEMICOLON, "Expected ';' after value.")
     return new EchoStmt(value)
+  }
+
+  /**
+   * returnStmt     → "return" expression? ";" ;
+   */
+  private returnStatement(): Stmt {
+    let keyword = this.prev()
+    let value: Expr | null = null
+
+    if (!this.check(TokenType.SEMICOLON)) {
+      value = this.expression()
+    }
+    this.consume(TokenType.SEMICOLON, "Expected ';' after return value.")
+
+    return new ReturnStmt(keyword, value)
   }
 
   /**

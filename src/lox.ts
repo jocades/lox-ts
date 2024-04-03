@@ -43,11 +43,10 @@ export class Lox {
     const parser = new Parser(tokens)
     const statements = parser.parse()
 
-    console.log('[TOKENS]', tokens)
     // stop if there was a syntax error
     if (this.hadError) return
 
-    console.log('[AST]', statements)
+    // console.log('[AST]', statements)
     // console.log(new AstPrinter().print(statements!))
 
     this.interpreter.interpret(statements, { repl })

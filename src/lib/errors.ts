@@ -21,13 +21,3 @@ export class RuntimeError extends Error {
     this.token = token
   }
 }
-
-export class BreakError extends Error {
-  name = 'BreakError'
-  token: Token
-
-  constructor(token: Token, message: string) {
-    super(message)
-    this.token = token
-  }
-}
