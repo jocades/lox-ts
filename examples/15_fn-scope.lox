@@ -1,13 +1,17 @@
-let global = "global";
+let global = "
+  global
+  scope
+";
 
 fn main() {
-  let local = "local";
+  let local = "
+      local
+      scope
+  ";
 
-  fn what(x) {
+  return fn(x) {
     return x + global + local;
-  }
-
-  return what;
+  };
 }
 
 let where = main();
@@ -16,3 +20,4 @@ echo where("wtf");
 echo main()("closure");
 
 echo len(where("wtf"));
+

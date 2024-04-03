@@ -3,6 +3,7 @@ import type { RuntimeError } from './lib/errors'
 import { Lexer, TokenType, type Token } from './frontend/lexer'
 import { Parser } from './frontend/parser'
 import { Interpreter } from './runtime/interpreter'
+import { Resolver } from './runtime/resolver'
 
 export class Lox {
   private static interpreter = new Interpreter()
@@ -46,8 +47,11 @@ export class Lox {
     // stop if there was a syntax error
     if (this.hadError) return
 
-    // console.log('[AST]', statements)
-    // console.log(new AstPrinter().print(statements!))
+    const resolver = new Resolver(this.interpreter)
+    resolver.resolve(statements)
+
+    // stop if there was a resolution error
+    if (this.hadError) return
 
     this.interpreter.interpret(statements, { repl })
   }

@@ -126,7 +126,7 @@ export class ConditionalExpr implements Expr {
   }
 }
 
-// allow for anonymous functions
+// allows for anonymous functions
 export class FunctionExpr implements Expr {
   constructor(
     public params: Token[],

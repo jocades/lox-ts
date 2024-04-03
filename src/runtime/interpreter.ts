@@ -16,6 +16,7 @@ export class Interpreter
 {
   globals = new Environment()
   private environment = this.globals
+  private locals: Map<ast.Expr, number> = new Map()
   private options: InterpreterOptions = { repl: false }
 
   constructor() {
@@ -44,6 +45,10 @@ export class Interpreter
 
   private execute(stmt: ast.Stmt): void {
     stmt.accept(this)
+  }
+
+  public resolve(expr: ast.Expr, depth: number): void {
+    this.locals.set(expr, depth)
   }
 
   // -- STMT VISITORS ---
@@ -85,7 +90,7 @@ export class Interpreter
     let name = stmt.name.lexeme
     this.environment.define(
       name,
-      new LoxFunction(name, stmt.fn, this.environment)
+      new LoxFunction(name, stmt.fn, this.environment),
     )
   }
 
@@ -125,7 +130,14 @@ export class Interpreter
 
   visitAssignExpr(expr: ast.AssignExpr): LoxObject {
     let value = this.evaluate(expr.value)
-    this.environment.assign(expr.name, value)
+
+    let distance = this.locals.get(expr)
+    if (distance !== undefined) {
+      this.environment.assignAt(distance, expr.name, value)
+    } else {
+      this.globals.assign(expr.name, value)
+    }
+
     return value
   }
 
@@ -164,7 +176,7 @@ export class Interpreter
 
         throw new RuntimeError(
           expr.operator,
-          'Operands must be two numbers or two strings'
+          'Operands must be two numbers or two strings',
         )
       }
       case TokenType.SLASH: {
@@ -172,7 +184,7 @@ export class Interpreter
         if (right === 0) {
           throw new RuntimeError(
             expr.operator,
-            'Division by zero is not allowed.'
+            'Division by zero is not allowed.',
           )
         }
         return (left as number) / (right as number)
@@ -197,7 +209,7 @@ export class Interpreter
     if (args.length !== callee.arity()) {
       throw new RuntimeError(
         expr.paren,
-        `Expected ${callee.arity()} arguments but got ${args.length}.`
+        `Expected ${callee.arity()} arguments but got ${args.length}.`,
       )
     }
 
@@ -253,7 +265,16 @@ export class Interpreter
   }
 
   visitVariableExpr(expr: ast.VariableExpr) {
-    return this.environment.get(expr.name)
+    return this.lookUpVariable(expr.name, expr)
+  }
+
+  private lookUpVariable(name: Token, expr: ast.Expr): LoxObject {
+    let distance = this.locals.get(expr)
+
+    if (distance === undefined) {
+      return this.globals.get(name)
+    }
+    return this.environment.getAt(distance, name.lexeme)
   }
 
   // -- UTIL ---
@@ -266,7 +287,7 @@ export class Interpreter
   private checkNumberOperands(
     operator: Token,
     left: LoxObject,
-    right: LoxObject
+    right: LoxObject,
   ) {
     if (typeof left === 'number' && typeof right === 'number') return
     throw new RuntimeError(operator, 'Operands must be numbers.')

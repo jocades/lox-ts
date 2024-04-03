@@ -10,7 +10,7 @@ export class Environment {
     this.enclosing = enclosing
   }
 
-  public get(name: Token): LoxObject {
+  get(name: Token): LoxObject {
     if (this.values.has(name.lexeme)) {
       return this.values.get(name.lexeme)!
     }
@@ -22,7 +22,7 @@ export class Environment {
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`)
   }
 
-  public assign(name: Token, value: LoxObject): void {
+  assign(name: Token, value: LoxObject): void {
     if (this.values.has(name.lexeme)) {
       // allow shadowing in the same scope
       this.values.set(name.lexeme, value)
@@ -37,7 +37,23 @@ export class Environment {
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`)
   }
 
-  public define(name: string, value: LoxObject): void {
+  define(name: string, value: LoxObject): void {
     this.values.set(name, value)
+  }
+
+  ancestor(distance: number): Environment {
+    let environment: Environment = this
+    for (let i = 0; i < distance; i++) {
+      environment = environment.enclosing!
+    }
+    return environment
+  }
+
+  getAt(distance: number, name: string): LoxObject {
+    return this.ancestor(distance).values.get(name)!
+  }
+
+  assignAt(distance: number, name: Token, value: LoxObject): void {
+    this.ancestor(distance).values.set(name.lexeme, value)
   }
 }

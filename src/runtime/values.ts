@@ -16,20 +16,15 @@ export abstract class LoxCallable {
 }
 
 export class LoxFunction extends LoxCallable {
-  static Return = class Return extends Error {
+  static Return = class Return {
     name = 'ReturnException'
-    value: LoxObject
-
-    constructor(value: LoxObject) {
-      super()
-      this.value = value
-    }
+    constructor(public value: LoxObject) {}
   }
 
   constructor(
     private name: string | null,
     private declaration: FunctionExpr,
-    private closure: Environment
+    private closure: Environment,
   ) {
     super()
   }
@@ -44,8 +39,7 @@ export class LoxFunction extends LoxCallable {
     // bind arguments to parameters
     for (let i = 0; i < this.declaration.params.length; i++) {
       let param = this.declaration.params[i]
-      let arg = args[i]
-      environment.define(param.lexeme, arg)
+      environment.define(param.lexeme, args[i])
     }
 
     try {

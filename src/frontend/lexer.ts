@@ -1,5 +1,5 @@
 // prettier-ignore
-export enum TokenType {
+export const enum TokenType {
   // Single-character tokens.
   LPAREN, RPAREN, LBRACE, RBRACE,
   CARET, COLON, COMMA, DOT, MINUS, PLUS,
@@ -53,7 +53,7 @@ export class Token {
     public type: TokenType,
     public lexeme: string,
     public literal: any,
-    public line: number
+    public line: number,
   ) {}
 
   // public toString(): string {
@@ -216,7 +216,7 @@ export class Lexer {
 
     this.push(
       TokenType.NUMBER,
-      parseFloat(this.source.substring(this.start, this.cursor))
+      parseFloat(this.source.substring(this.start, this.cursor)),
     )
   }
 
