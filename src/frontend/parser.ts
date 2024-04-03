@@ -264,7 +264,7 @@ export class Parser {
 
     this.consume(
       TokenType.SEMICOLON,
-      "Expected ';' after variable declaration.",
+      "Expected ';' after variable declaration."
     )
 
     return new LetStmt(name, initializer)
@@ -319,7 +319,7 @@ export class Parser {
   private fnDeclaration(kind: string): Stmt {
     let name = this.consume(
       TokenType.IDENTIFIER,
-      `Expected ${kind} after name.`,
+      `Expected ${kind} after name.`
     )
     return new FunctionStmt(name, this.fnBody(kind))
   }
@@ -334,7 +334,7 @@ export class Parser {
           this.error(this.peek(), 'Cannot have more than 255 parameters.')
         }
         parameters.push(
-          this.consume(TokenType.IDENTIFIER, 'Expected parameter name.'),
+          this.consume(TokenType.IDENTIFIER, 'Expected parameter name.')
         )
       } while (this.match(TokenType.COMMA))
     }
@@ -384,7 +384,7 @@ export class Parser {
   }
 
   /**
-   * logical_and    → equality ( "and" equality )* ;
+   * logical_and    → conditional ( "and" conditional )* ;
    */
 
   private and(): Expr {
@@ -399,14 +399,18 @@ export class Parser {
     return expr
   }
 
+  /**
+   * conditional    → equality ( "?" expression ":" conditional )? ;
+   */
   private conditional(): Expr {
     let expr = this.equality()
 
     while (this.match(TokenType.QUESTION)) {
+      // like an if stmt bun the branches produce values
       let thenBranch = this.expression()
       this.consume(
         TokenType.COLON,
-        "Expected ':' after then branch of conditional expression.",
+        "Expected ':' after then branch of conditional expression."
       )
       let elseBranch = this.expression()
       expr = new ConditionalExpr(expr, thenBranch, elseBranch)
@@ -441,7 +445,7 @@ export class Parser {
         TokenType.GREATER,
         TokenType.GREATER_EQUAL,
         TokenType.LESS,
-        TokenType.LESS_EQUAL,
+        TokenType.LESS_EQUAL
       )
     ) {
       let operator = this.prev()
@@ -614,7 +618,7 @@ export class Parser {
     return new ParseError(
       message,
       token.line,
-      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
+      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`
     )
   }
 

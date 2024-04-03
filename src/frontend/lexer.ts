@@ -12,9 +12,7 @@ export enum TokenType {
   LESS, LESS_EQUAL,
 
   // Literals.
-  IDENTIFIER,
-  STRING,
-  NUMBER,
+  IDENTIFIER, STRING, NUMBER,
 
   // Keywords.
   AND, BREAK, CLASS, ECHO, ELSE, FALSE,
@@ -55,7 +53,7 @@ export class Token {
     public type: TokenType,
     public lexeme: string,
     public literal: any,
-    public line: number,
+    public line: number
   ) {}
 
   // public toString(): string {
@@ -169,7 +167,7 @@ export class Lexer {
       default:
         if (isDigit(c)) this.number()
         else if (isAlpha(c)) this.identifier()
-        else console.error(`Unexpected character: ${c}`)
+        else console.log(`Unexpected character: ${c}`)
     }
   }
 
@@ -218,7 +216,7 @@ export class Lexer {
 
     this.push(
       TokenType.NUMBER,
-      parseFloat(this.source.substring(this.start, this.cursor)),
+      parseFloat(this.source.substring(this.start, this.cursor))
     )
   }
 
@@ -259,16 +257,6 @@ export class Lexer {
       return '\0'
     }
     return this.source[this.cursor + 1]
-  }
-
-  /** @returns the previous char in the iterable */
-  private get prev(): string {
-    return this.source[this.cursor - 1]
-  }
-
-  /** @returns the char n steps ahead or behind the current cursor */
-  private peek(n: number): string {
-    return this.source[this.cursor + n]
   }
 
   /** Pushes a new token into the list */

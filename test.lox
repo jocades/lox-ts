@@ -1,4 +1,1 @@
-echo "one";
-echo true;
-echo nil;
-echo (2 + 2) * 2;
+let name = "Jordi";

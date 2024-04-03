@@ -15,20 +15,6 @@ export abstract class LoxCallable {
   abstract toString(): string
 }
 
-export class LoxClockFn extends LoxCallable {
-  arity(): number {
-    return 0
-  }
-
-  call(): LoxObject {
-    return Date.now() // ms since epoch
-  }
-
-  toString(): string {
-    return '<native fn>'
-  }
-}
-
 export class LoxFunction extends LoxCallable {
   static Return = class Return extends Error {
     name = 'ReturnException'
@@ -43,7 +29,7 @@ export class LoxFunction extends LoxCallable {
   constructor(
     private name: string | null,
     private declaration: FunctionExpr,
-    private closure: Environment,
+    private closure: Environment
   ) {
     super()
   }
