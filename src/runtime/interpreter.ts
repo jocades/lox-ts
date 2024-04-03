@@ -201,6 +201,13 @@ export class Interpreter
     return callee.call(this, args)
   }
 
+  visitConditionalExpr(expr: ast.ConditionalExpr): LoxObject {
+    let condition = this.evaluate(expr.condition)
+    return this.isTruthy(condition)
+      ? this.evaluate(expr.thenBranch)
+      : this.evaluate(expr.elseBranch)
+  }
+
   visitFunctionExpr(expr: ast.FunctionExpr): LoxObject {
     return new LoxFunction(null, expr, this.environment)
   }

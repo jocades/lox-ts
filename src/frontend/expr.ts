@@ -65,6 +65,7 @@ export interface ExprVisitor<R> {
   visitAssignExpr(expr: AssignExpr): R
   visitBinaryExpr(expr: BinaryExpr): R
   visitCallExpr(expr: CallExpr): R
+  visitConditionalExpr(expr: ConditionalExpr): R
   visitFunctionExpr(expr: FunctionExpr): R
   visitGroupingExpr(expr: GroupingExpr): R
   visitLiteralExpr(expr: LiteralExpr): R
@@ -109,6 +110,19 @@ export class CallExpr implements Expr {
 
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitCallExpr(this)
+  }
+}
+
+// ternary operator
+export class ConditionalExpr implements Expr {
+  constructor(
+    public condition: Expr,
+    public thenBranch: Expr,
+    public elseBranch: Expr,
+  ) {}
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitConditionalExpr(this)
   }
 }
 

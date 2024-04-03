@@ -19,6 +19,7 @@ import {
   FunctionStmt,
   ReturnStmt,
   FunctionExpr,
+  ConditionalExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -73,7 +74,8 @@ import { Lox } from '../lox'
 // assignment     → IDENTIFIER "=" assignment
 //                | logical_or ;
 // logical_or     → logical_and ( "or" logical_and )* ;
-// logical_and    → equality ( "and" equality )* ;
+// logical_and    → conditional ( "and" conditional )* ;
+// conditional    → equality ( "?" expression ":" conditional )? ;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 // term           → factor ( ( "-" | "+" ) factor )* ;
@@ -178,7 +180,6 @@ export class Parser {
       condition = this.expression()
     }
     this.consume(TokenType.SEMICOLON, "Expected ';' after looop condition.")
-
     let increment: Expr | null = null
     if (!this.check(TokenType.RPAREN)) {
       increment = this.expression()
@@ -387,12 +388,28 @@ export class Parser {
    */
 
   private and(): Expr {
-    let expr = this.equality()
+    let expr = this.conditional()
 
     while (this.match(TokenType.AND)) {
       let operator = this.prev()
-      let right = this.equality()
+      let right = this.conditional()
       expr = new LogicalExpr(expr, operator, right)
+    }
+
+    return expr
+  }
+
+  private conditional(): Expr {
+    let expr = this.equality()
+
+    while (this.match(TokenType.QUESTION)) {
+      let thenBranch = this.expression()
+      this.consume(
+        TokenType.COLON,
+        "Expected ':' after then branch of conditional expression.",
+      )
+      let elseBranch = this.expression()
+      expr = new ConditionalExpr(expr, thenBranch, elseBranch)
     }
 
     return expr

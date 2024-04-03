@@ -2,8 +2,8 @@
 export enum TokenType {
   // Single-character tokens.
   LPAREN, RPAREN, LBRACE, RBRACE,
-  CARET, COMMA, DOT, MINUS, PLUS,
-  SEMICOLON, SLASH, STAR,
+  CARET, COLON, COMMA, DOT, MINUS, PLUS,
+  QUESTION, SEMICOLON, SLASH, STAR,
 
   // One or two character tokens.
   BANG, BANG_EQUAL,
@@ -104,6 +104,12 @@ export class Lexer {
       case ',':
         this.push(TokenType.COMMA)
         break
+      case '^':
+        this.push(TokenType.CARET)
+        break
+      case ':':
+        this.push(TokenType.COLON)
+        break
       case '.':
         this.push(TokenType.DOT)
         break
@@ -112,6 +118,9 @@ export class Lexer {
         break
       case '+':
         this.push(TokenType.PLUS)
+        break
+      case '?':
+        this.push(TokenType.QUESTION)
         break
       case ';':
         this.push(TokenType.SEMICOLON)
