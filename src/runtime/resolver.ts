@@ -8,9 +8,22 @@ const enum FunctionType {
   FUNCTION,
 }
 
+const enum VariableState {
+  DECLARED,
+  DEFINED,
+  READ, // -> resolved
+}
+
+class Variable {
+  constructor(
+    public name: Token,
+    public state: VariableState,
+  ) {}
+}
+
 export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
   private interpreter: Interpreter
-  private scopes: Map<string, boolean>[] = [] // bool = whether or not we have finished resolving the variable's initializer
+  private scopes: Map<string, Variable>[] = [] // bool = whether or not we have finished resolving the variable's initializer
   private currentFunction = FunctionType.NONE
 
   constructor(interpreter: Interpreter) {
@@ -54,7 +67,7 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
 
   visitAssignExpr(expr: ast.AssignExpr): void {
     this.resolve(expr.value)
-    this.resolveLocal(expr, expr.name)
+    this.resolveLocal(expr, expr.name, false)
   }
 
   visitBinaryExpr(expr: ast.BinaryExpr): void {
@@ -105,14 +118,11 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
   }
 
   visitVariableExpr(expr: ast.VariableExpr): void {
-    if (
-      !isEmpty(this.scopes) &&
-      this.scopes.at(-1)!.get(expr.name.lexeme) === false
-    ) {
+    if (!isEmpty(this.scopes) && this.scopes.at(-1)!.get(expr.name.lexeme)) {
       Lox.error(expr.name, 'Cannot read local variable in its own initializer.')
     }
 
-    this.resolveLocal(expr, expr.name)
+    this.resolveLocal(expr, expr.name, true)
   }
 
   visitWhileStmt(stmt: ast.WhileStmt): void {
@@ -144,7 +154,17 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
   }
 
   private endScope(): void {
-    this.scopes.pop()
+    let scope = this.scopes.pop()!
+
+    for (let variable of scope.values()) {
+      if (variable.state === VariableState.DEFINED) {
+        // TODO: add a warn level to Lox i.e: Lox.warn();
+        Lox.error(
+          variable.name,
+          'Local variable is defined but never used. Consider removing it.',
+        )
+      }
+    }
   }
 
   private declare(name: Token): void {
@@ -155,21 +175,29 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
       Lox.error(name, 'Variable with this name already declared in this scope.')
     }
 
-    scope.set(name.lexeme, false)
+    scope.set(name.lexeme, new Variable(name, VariableState.DECLARED))
   }
 
   private define(name: Token): void {
     if (isEmpty(this.scopes)) return
-    this.scopes.at(-1)!.set(name.lexeme, true)
+    this.scopes
+      .at(-1)!
+      .set(name.lexeme, new Variable(name, VariableState.DEFINED))
   }
 
-  private resolveLocal(expr: ast.Expr, name: Token): void {
+  private resolveLocal(expr: ast.Expr, name: Token, isRead: boolean): void {
     for (let i = this.scopes.length - 1; i >= 0; i--) {
       if (this.scopes[i].has(name.lexeme)) {
         this.interpreter.resolve(expr, this.scopes.length - 1 - i)
+
+        // If read op, mark as used.
+        if (isRead) {
+          this.scopes[i].get(name.lexeme)!.state = VariableState.READ
+        }
         return
       }
     }
+    // Not found. Assume it is global.
   }
 }
 
