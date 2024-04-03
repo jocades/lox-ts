@@ -2,6 +2,10 @@
   "name": "lox",
   "module": "main.ts",
   "type": "module",
+  "scripts": {
+    "genast": "bun run src/lib/generate-ast.ts",
+    "postinstall": "chmod +x main.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
