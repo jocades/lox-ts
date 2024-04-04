@@ -67,9 +67,11 @@ export interface ExprVisitor<R> {
   visitCallExpr(expr: CallExpr): R
   visitConditionalExpr(expr: ConditionalExpr): R
   visitFunctionExpr(expr: FunctionExpr): R
+  visitGetExpr(expr: GetExpr): R
   visitGroupingExpr(expr: GroupingExpr): R
   visitLiteralExpr(expr: LiteralExpr): R
   visitLogicalExpr(expr: LogicalExpr): R
+  visitSetExpr(expr: SetExpr): R
   visitUnaryExpr(expr: UnaryExpr): R
   visitVariableExpr(expr: VariableExpr): R
 }
@@ -138,6 +140,17 @@ export class FunctionExpr implements Expr {
   }
 }
 
+export class GetExpr implements Expr {
+  constructor(
+    public object: Expr,
+    public name: Token,
+  ) {}
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    visitor.visitGetExpr(this)
+  }
+}
+
 export class GroupingExpr implements Expr {
   constructor(public expression: Expr) {}
 
@@ -178,6 +191,18 @@ export class UnaryExpr implements Expr {
 
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitUnaryExpr(this)
+  }
+}
+
+export class SetExpr implements Expr {
+  constructor(
+    public object: Expr,
+    public name: Token,
+    public value: Expr,
+  ) {}
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitSetExpr(this)
   }
 }
 

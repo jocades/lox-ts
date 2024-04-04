@@ -8,6 +8,7 @@ export interface Stmt {
 export interface StmtVisitor<R> {
   visitBlockStmt(stmt: BlockStmt): R
   visitBreakStmt(stmt: BreakStmt): R
+  visitClassStmt(stmt: ClassStmt): R
   visitEchoStmt(stmt: EchoStmt): R
   visitExpressionStmt(stmt: ExpressionStmt): R
   visitFunctionStmt(stmt: FunctionStmt): R
@@ -30,6 +31,17 @@ export class BreakStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitBreakStmt(this)
+  }
+}
+
+export class ClassStmt implements Stmt {
+  constructor(
+    public name: Token,
+    public methods: FunctionStmt[],
+  ) {}
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitClassStmt(this)
   }
 }
 

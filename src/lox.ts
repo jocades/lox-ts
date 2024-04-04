@@ -4,6 +4,7 @@ import { Lexer, TokenType, type Token } from './frontend/lexer'
 import { Parser } from './frontend/parser'
 import { Interpreter } from './runtime/interpreter'
 import { Resolver } from './runtime/resolver'
+import { Debug } from './lib/config'
 
 export class Lox {
   private static interpreter = new Interpreter()
@@ -53,6 +54,8 @@ export class Lox {
     // stop if there was a resolution error
     if (this.hadError) return
 
+    if (Debug.AST) console.log('[AST]', statements)
+
     this.interpreter.interpret(statements, { repl })
   }
 
@@ -80,6 +83,16 @@ export class Lox {
     switch (input) {
       case '.exit':
         process.exit(0)
+
+      case '.ast':
+        Debug.AST = !Debug.AST
+        console.log(`AST is now ${Debug.AST ? 'enabled' : 'disabled'}\n`)
+        break
+
+      // case '.env':
+      //   console.log(env)
+      //   break
+
       default:
         console.log(`Unknown command '${input}'`)
     }

@@ -2,7 +2,13 @@ import * as ast from '@/frontend/ast'
 import { Token, TokenType } from '@/frontend/lexer'
 import { RuntimeError } from '@/lib/errors'
 import { Lox } from '@/lox'
-import { LoxCallable, LoxFunction, type LoxObject } from './values'
+import {
+  LoxCallable,
+  LoxClass,
+  LoxFunction,
+  LoxInstance,
+  type LoxObject,
+} from './values'
 import { Environment } from './environment'
 import { Break } from './exceptions'
 import { LoxClockFn, LoxLenFn, LoxTypeFn } from './globals'
@@ -68,6 +74,12 @@ export class Interpreter
 
   visitBlockStmt(stmt: ast.BlockStmt): void {
     this.executeBlock(stmt.statements, new Environment(this.environment))
+  }
+
+  visitClassStmt(stmt: ast.ClassStmt): void {
+    this.environment.define(stmt.name.lexeme, null)
+    let klass = new LoxClass(stmt.name.lexeme)
+    this.environment.assign(stmt.name, klass)
   }
 
   visitBreakStmt(stmt: ast.BreakStmt): void {
@@ -216,6 +228,15 @@ export class Interpreter
     return callee.call(this, args)
   }
 
+  visitGetExpr(expr: ast.GetExpr): LoxObject {
+    let object = this.evaluate(expr.object)
+    if (object instanceof LoxInstance) {
+      return object.get(expr.name)
+    }
+
+    throw new RuntimeError(expr.name, 'Only instances have properties.')
+  }
+
   visitConditionalExpr(expr: ast.ConditionalExpr): LoxObject {
     let condition = this.evaluate(expr.condition)
     return this.isTruthy(condition)
@@ -246,6 +267,18 @@ export class Interpreter
     }
 
     return this.evaluate(expr.right)
+  }
+
+  visitSetExpr(expr: ast.SetExpr): LoxObject {
+    let object = this.evaluate(expr.object)
+
+    if (!(object instanceof LoxInstance)) {
+      throw new RuntimeError(expr.name, 'Only instances have fields.')
+    }
+
+    let value = this.evaluate(expr.value)
+    object.set(expr.name, value)
+    return value
   }
 
   visitUnaryExpr(expr: ast.UnaryExpr): LoxObject {

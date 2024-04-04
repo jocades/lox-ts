@@ -36,6 +36,11 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
     this.endScope()
   }
 
+  visitClassStmt(stmt: ast.ClassStmt): void {
+    this.declare(stmt.name)
+    this.define(stmt.name)
+  }
+
   visitEchoStmt(stmt: ast.EchoStmt): void {
     this.resolve(stmt.expression)
   }
@@ -83,6 +88,10 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
     }
   }
 
+  visitGetExpr(expr: ast.GetExpr): void {
+    this.resolve(expr.object)
+  }
+
   visitGroupingExpr(expr: ast.GroupingExpr): void {
     this.resolve(expr.expression)
   }
@@ -92,6 +101,11 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
   visitLogicalExpr(expr: ast.LogicalExpr): void {
     this.resolve(expr.left)
     this.resolve(expr.right)
+  }
+
+  visitSetExpr(expr: ast.SetExpr): void {
+    this.resolve(expr.value)
+    this.resolve(expr.object)
   }
 
   visitUnaryExpr(expr: ast.UnaryExpr): void {

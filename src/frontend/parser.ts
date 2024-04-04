@@ -20,6 +20,9 @@ import {
   ReturnStmt,
   FunctionExpr,
   ConditionalExpr,
+  ClassStmt,
+  GetExpr,
+  SetExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -42,10 +45,12 @@ import { Lox } from '../lox'
 // -------------
 // program        → declaration* EOF ;
 //
-// declaration    → fnDecl,
+// declaration    → classDecl
+//                | fnDecl,
 //                | letDecl
 //                | statement ;
 //
+// classDecl      → "class" IDENTIFIER "{" function* "}" ;
 // fnDecl         → "fn" function ;
 // function       → IDENTIFIER "(" parameters? ")" block ;
 // parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
@@ -82,7 +87,7 @@ import { Lox } from '../lox'
 // factor         → unary ( ( "/" | "*" ) unary )* ;
 // unary          → ( "!" | "-" ) unary
 //                | primary ;
-// call           → primary ( "(" arguments? ")" )* ; // this "operator" has higher precedence than unary
+// call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
 // arguments      → expression ( "," expression )* ;
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
 //                | "(" expression ")"
@@ -128,13 +133,33 @@ export class Parser {
    *                | statement ;
    */
   private declaration(): Stmt {
+    if (this.match(TokenType.CLASS)) return this.classDeclaration()
+
     if (this.check(TokenType.FN) && this.checkNext(TokenType.IDENTIFIER)) {
       this.consume(TokenType.FN, 'Expected function declaration.')
       return this.fnDeclaration('function')
     }
+
     if (this.match(TokenType.LET)) return this.letDeclaration()
 
     return this.statement()
+  }
+
+  /**
+   * classDecl      → "class" IDENTIFIER "{" function* "}" ;
+   */
+  private classDeclaration(): Stmt {
+    let name = this.consume(TokenType.IDENTIFIER, 'Expected class name.')
+    this.consume(TokenType.LBRACE, "Expected '{' before class body.")
+
+    let methods: FunctionStmt[] = []
+
+    while (!this.check(TokenType.RBRACE) && !this.eof()) {
+      methods.push(this.fnDeclaration('method'))
+    }
+    this.consume(TokenType.RBRACE, "Expected '}' after class body.")
+
+    return new ClassStmt(name, methods)
   }
 
   /**
@@ -264,7 +289,7 @@ export class Parser {
 
     this.consume(
       TokenType.SEMICOLON,
-      "Expected ';' after variable declaration."
+      "Expected ';' after variable declaration.",
     )
 
     return new LetStmt(name, initializer)
@@ -316,10 +341,10 @@ export class Parser {
    * function      → IDENTIFIER "(" parameters? ")" block ;
    * parameters    → IDENTIFIER ( "," IDENTIFIER )* ;
    */
-  private fnDeclaration(kind: string): Stmt {
+  private fnDeclaration(kind: string): FunctionStmt {
     let name = this.consume(
       TokenType.IDENTIFIER,
-      `Expected ${kind} after name.`
+      `Expected ${kind} after name.`,
     )
     return new FunctionStmt(name, this.fnBody(kind))
   }
@@ -334,7 +359,7 @@ export class Parser {
           this.error(this.peek(), 'Cannot have more than 255 parameters.')
         }
         parameters.push(
-          this.consume(TokenType.IDENTIFIER, 'Expected parameter name.')
+          this.consume(TokenType.IDENTIFIER, 'Expected parameter name.'),
         )
       } while (this.match(TokenType.COMMA))
     }
@@ -360,6 +385,8 @@ export class Parser {
       if (expr instanceof VariableExpr) {
         let name = expr.name
         return new AssignExpr(name, value)
+      } else if (expr instanceof GetExpr) {
+        return new SetExpr(expr.object, expr.name, value)
       }
 
       this.error(equals, 'Invalid assignment target.')
@@ -410,7 +437,7 @@ export class Parser {
       let thenBranch = this.expression()
       this.consume(
         TokenType.COLON,
-        "Expected ':' after then branch of conditional expression."
+        "Expected ':' after then branch of conditional expression.",
       )
       let elseBranch = this.expression()
       expr = new ConditionalExpr(expr, thenBranch, elseBranch)
@@ -445,7 +472,7 @@ export class Parser {
         TokenType.GREATER,
         TokenType.GREATER_EQUAL,
         TokenType.LESS,
-        TokenType.LESS_EQUAL
+        TokenType.LESS_EQUAL,
       )
     ) {
       let operator = this.prev()
@@ -500,7 +527,7 @@ export class Parser {
   }
 
   /**
-   * call           → primary ( "(" arguments? ")" )* ;
+   * call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
    */
   private call(): Expr {
     let expr = this.primary()
@@ -508,6 +535,12 @@ export class Parser {
     while (true) {
       if (this.match(TokenType.LPAREN)) {
         expr = this.finishCall(expr)
+      } else if (this.match(TokenType.DOT)) {
+        let name = this.consume(
+          TokenType.IDENTIFIER,
+          "Expected property name after '.'.",
+        )
+        expr = new GetExpr(expr, name)
       } else {
         break
       }
@@ -618,7 +651,7 @@ export class Parser {
     return new ParseError(
       message,
       token.line,
-      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`
+      token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
     )
   }
 

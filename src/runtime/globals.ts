@@ -1,6 +1,4 @@
-import { RuntimeError } from '@/lib/errors'
 import { LoxCallable, type LoxObject } from './values'
-import type { Environment } from './environment'
 import type { Interpreter } from './interpreter'
 
 export class LoxClockFn extends LoxCallable {
@@ -40,8 +38,10 @@ export class LoxTypeFn extends LoxCallable {
     return 1
   }
 
-  call(_: Interpreter, arg: LoxObject[]): LoxObject {
-    return arg[0] === null ? 'nil' : typeof arg[0]
+  call(_: Interpreter, args: LoxObject[]): LoxObject {
+    let arg = args[0]
+    if (arg === null) return 'nil'
+    return typeof arg
   }
 
   toString(): string {

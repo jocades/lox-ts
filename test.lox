@@ -1,18 +1,9 @@
-let global = "global";
-
-fn main() {
-  let local = "local";
-
-  fn what(x) {
-    return x + global + local;
+class User {
+  greet() {
+    echo "Hello!";
   }
-
-  return what;
 }
 
-let where = main();
-echo where("wtf");
+let user = User();
 
-echo main()("closure");
-
-echo len(where("wtf"));
+echo user;
