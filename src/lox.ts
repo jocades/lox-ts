@@ -5,22 +5,26 @@ import { Parser } from './frontend/parser'
 import { Interpreter } from './runtime/interpreter'
 import { Resolver } from './runtime/resolver'
 import { Debug } from './lib/config'
+import type { Stmt } from './frontend/stmt'
 
 export class Lox {
   private static interpreter = new Interpreter()
   static hadError = false
   static hadRuntimeError = false
 
-  static async file(path: string): Promise<void> {
+  static async file(
+    path: string,
+    // opts: { output: boolean } = { output: false },
+  ): Promise<void> {
     const source = await Bun.file(path).text()
-    this.run(source)
+    await this.run(source)
 
     // indicate an error in the exit code
     if (this.hadError) process.exit(65)
     if (this.hadRuntimeError) process.exit(70)
   }
 
-  static repl(): void {
+  static async repl(): Promise<void> {
     while (true) {
       const input = prompt('[lox]>')
 
@@ -33,12 +37,12 @@ export class Lox {
         continue
       }
 
-      this.run(input, true)
+      await this.run(input, true)
       this.hadError = false
     }
   }
 
-  static run(source: string, repl = false): void {
+  static async run(source: string, repl = false): Promise<void> {
     const lexer = new Lexer(source)
     const tokens = lexer.lex()
 
@@ -55,6 +59,7 @@ export class Lox {
     if (this.hadError) return
 
     if (Debug.AST) console.log('[AST]', statements)
+    if (Debug.JSON) await this.writeAst(statements)
 
     this.interpreter.interpret(statements, { repl })
   }
@@ -86,7 +91,7 @@ export class Lox {
 
       case '.ast':
         Debug.AST = !Debug.AST
-        console.log(`AST is now ${Debug.AST ? 'enabled' : 'disabled'}\n`)
+        console.log(`AST is now ${Debug.AST ? 'enabled' : 'disabled'}`)
         break
 
       // case '.env':
@@ -96,6 +101,10 @@ export class Lox {
       default:
         console.log(`Unknown command '${input}'`)
     }
+  }
+
+  private static async writeAst(tree: Stmt[]) {
+    await Bun.write('test.ast.json', JSON.stringify(tree, null, 2))
   }
 }
 

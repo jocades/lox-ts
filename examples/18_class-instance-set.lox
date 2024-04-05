@@ -1,0 +1,21 @@
+class User {
+  getCallback() {
+    fn localFunction() {
+      echo this;
+    }
+
+    return localFunction;
+  }
+
+  whoami() {
+    echo this.name;
+  }
+}
+
+let callback = User().getCallback();
+callback();
+
+let user = User();
+user.name = "Jordi";
+
+user.whoami();

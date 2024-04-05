@@ -13,15 +13,15 @@ user.whoami();
 user.name = "Jordi";
 user.whoami();
 
-fn greet(name) {
-  echo "Hello " + name + "!";
+fn greet() {
+  echo "Hello!";
 }
 
 user.greet = greet;
-user.greet("Juanito");
+user.greet();
 
 user.age = 25;
 
 let u2 = user.init("idk");
 echo u2.age;
-user.greet("asdfasdf");
+user.greet();

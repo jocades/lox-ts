@@ -1,4 +1,3 @@
-import type { FunctionStmt } from '@/frontend/stmt'
 import type { Interpreter } from './interpreter'
 import { Environment } from './environment'
 import type { FunctionExpr } from '@/frontend/expr'
@@ -25,16 +24,33 @@ export abstract class LoxCallable {
 }
 
 export class LoxClass extends LoxCallable {
-  constructor(public name: string) {
+  constructor(
+    public name: string,
+    private methods: Map<string, LoxFunction>,
+  ) {
     super()
   }
 
   arity(): number {
-    return 0
+    let initializer = this.findMethod('init')
+    if (initializer === null) return 0
+    return initializer.arity()
+  }
+
+  findMethod(name: string): LoxFunction | null {
+    if (this.methods.has(name)) {
+      return this.methods.get(name)!
+    }
+    return null
   }
 
   call(interpreter: Interpreter, args: LoxObject[]): LoxInstance {
     let instance = new LoxInstance(this)
+    let initializer = this.findMethod('init')
+    if (initializer !== null) {
+      initializer.bind(instance).call(interpreter, args)
+    }
+
     return instance
   }
 
@@ -56,12 +72,14 @@ export class LoxInstance {
       return this.fields.get(name.lexeme)!
     }
 
-    let method = this.klass.findMethod(name)
-    if (method) return method.bind(this)
+    let method = this.klass.findMethod(name.lexeme)
+    if (method !== null) {
+      return method.bind(this)
+    }
 
     throw new RuntimeError(
       name,
-      `'${this.klass.name}' has no attribute '${name.lexeme}'.`,
+      `'${this.klass.name}' has no property '${name.lexeme}'.`,
     )
   }
 
@@ -84,12 +102,24 @@ export class LoxFunction extends LoxCallable {
     private name: string | null,
     private declaration: FunctionExpr,
     private closure: Environment,
+    private isInitializer = false,
   ) {
     super()
   }
 
   arity(): number {
     return this.declaration.params.length
+  }
+
+  bind(instance: LoxInstance) {
+    let environment = new Environment(this.closure)
+    environment.define('this', instance)
+    return new LoxFunction(
+      this.name,
+      this.declaration,
+      environment,
+      this.isInitializer,
+    )
   }
 
   call(interpreter: Interpreter, args: LoxObject[]): LoxObject {
@@ -103,9 +133,15 @@ export class LoxFunction extends LoxCallable {
 
     try {
       interpreter.executeBlock(this.declaration.body, environment)
-    } catch (err) {
-      if (err instanceof LoxFunction.Return) return err.value
+    } catch (e) {
+      if (e instanceof LoxFunction.Return) {
+        // allow empty returns in initializers (returning `this`)
+        if (this.isInitializer) return this.closure.getAt(0, 'this')
+        return e.value
+      }
     }
+
+    if (this.isInitializer) return this.closure.getAt(0, 'this')
     return null
   }
 

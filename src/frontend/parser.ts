@@ -23,6 +23,7 @@ import {
   ClassStmt,
   GetExpr,
   SetExpr,
+  ThisExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -413,7 +414,6 @@ export class Parser {
   /**
    * logical_and    → conditional ( "and" conditional )* ;
    */
-
   private and(): Expr {
     let expr = this.conditional()
 
@@ -579,6 +579,8 @@ export class Parser {
     if (this.match(TokenType.NUMBER, TokenType.STRING)) {
       return new LiteralExpr(this.prev().literal)
     }
+
+    if (this.match(TokenType.THIS)) return new ThisExpr(this.prev())
 
     if (this.match(TokenType.IDENTIFIER)) {
       return new VariableExpr(this.prev())

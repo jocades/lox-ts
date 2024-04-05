@@ -13,7 +13,7 @@ async function main(argv: string[]) {
   }
 
   if (argv.length === 2) {
-    Lox.repl()
+    await Lox.repl()
   }
 }
 

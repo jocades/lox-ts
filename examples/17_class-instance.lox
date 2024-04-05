@@ -1,0 +1,17 @@
+class User {
+  getCallback() {
+    fn localFunction() {
+      echo this;
+    }
+
+    return localFunction;
+  }
+}
+
+let callback = User().getCallback();
+callback();
+
+
+
+
+

@@ -57,7 +57,7 @@ export class Interpreter
     this.locals.set(expr, depth)
   }
 
-  // -- STMT VISITORS ---
+  // --- STMT VISITORS ---
 
   executeBlock(statements: ast.Stmt[], environment: Environment): void {
     let previous = this.environment
@@ -78,7 +78,19 @@ export class Interpreter
 
   visitClassStmt(stmt: ast.ClassStmt): void {
     this.environment.define(stmt.name.lexeme, null)
-    let klass = new LoxClass(stmt.name.lexeme)
+
+    let methods = new Map<string, LoxFunction>()
+    for (let method of stmt.methods) {
+      let fn = new LoxFunction(
+        method.name.lexeme,
+        method.fn,
+        this.environment,
+        method.name.lexeme === 'init',
+      )
+      methods.set(method.name.lexeme, fn)
+    }
+
+    let klass = new LoxClass(stmt.name.lexeme, methods)
     this.environment.assign(stmt.name, klass)
   }
 
@@ -138,7 +150,7 @@ export class Interpreter
     }
   }
 
-  // -- EXPR VISITORS ---
+  // --- EXPR VISITORS ---
 
   visitAssignExpr(expr: ast.AssignExpr): LoxObject {
     let value = this.evaluate(expr.value)
@@ -279,6 +291,10 @@ export class Interpreter
     let value = this.evaluate(expr.value)
     object.set(expr.name, value)
     return value
+  }
+
+  visitThisExpr(expr: ast.ThisExpr): LoxObject {
+    return this.lookUpVariable(expr.keyword, expr)
   }
 
   visitUnaryExpr(expr: ast.UnaryExpr): LoxObject {

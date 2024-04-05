@@ -1,0 +1,241 @@
+[AST] [
+  ClassStmt {
+    name: Token {
+      type: 22,
+      lexeme: "User",
+      literal: null,
+      line: 1,
+    },
+    methods: [
+      FunctionStmt {
+        name: Token {
+          type: 22,
+          lexeme: "getCallback",
+          literal: null,
+          line: 2,
+        },
+        fn: FunctionExpr {
+          params: [],
+          body: [
+            FunctionStmt {
+              name: Token {
+                type: 22,
+                lexeme: "localFunction",
+                literal: null,
+                line: 3,
+              },
+              fn: FunctionExpr {
+                params: [],
+                body: [
+                  [Object ...]
+                ],
+                accept: [Function: accept],
+              },
+              accept: [Function: accept],
+            }, ReturnStmt {
+              keyword: Token {
+                type: 37,
+                lexeme: "return",
+                literal: null,
+                line: 7,
+              },
+              value: VariableExpr {
+                name: Token {
+                  type: 22,
+                  lexeme: "localFunction",
+                  literal: null,
+                  line: 7,
+                },
+                accept: [Function: accept],
+              },
+              accept: [Function: accept],
+            }
+          ],
+          accept: [Function: accept],
+        },
+        accept: [Function: accept],
+      }, FunctionStmt {
+        name: Token {
+          type: 22,
+          lexeme: "whoami",
+          literal: null,
+          line: 10,
+        },
+        fn: FunctionExpr {
+          params: [],
+          body: [
+            EchoStmt {
+              expression: GetExpr {
+                object: ThisExpr {
+                  keyword: [Object ...],
+                  accept: [Function: accept],
+                },
+                name: Token {
+                  type: 22,
+                  lexeme: "name",
+                  literal: null,
+                  line: 11,
+                },
+                accept: [Function: accept],
+              },
+              accept: [Function: accept],
+            }
+          ],
+          accept: [Function: accept],
+        },
+        accept: [Function: accept],
+      }
+    ],
+    accept: [Function: accept],
+  }, LetStmt {
+    name: Token {
+      type: 22,
+      lexeme: "callback",
+      literal: null,
+      line: 15,
+    },
+    initializer: CallExpr {
+      callee: GetExpr {
+        object: CallExpr {
+          callee: VariableExpr {
+            name: Token {
+              type: 22,
+              lexeme: "User",
+              literal: null,
+              line: 15,
+            },
+            accept: [Function: accept],
+          },
+          paren: Token {
+            type: 1,
+            lexeme: ")",
+            literal: null,
+            line: 15,
+          },
+          args: [],
+          accept: [Function: accept],
+        },
+        name: Token {
+          type: 22,
+          lexeme: "getCallback",
+          literal: null,
+          line: 15,
+        },
+        accept: [Function: accept],
+      },
+      paren: Token {
+        type: 1,
+        lexeme: ")",
+        literal: null,
+        line: 15,
+      },
+      args: [],
+      accept: [Function: accept],
+    },
+    accept: [Function: accept],
+  }, ExpressionStmt {
+    expression: CallExpr {
+      callee: VariableExpr {
+        name: Token {
+          type: 22,
+          lexeme: "callback",
+          literal: null,
+          line: 16,
+        },
+        accept: [Function: accept],
+      },
+      paren: Token {
+        type: 1,
+        lexeme: ")",
+        literal: null,
+        line: 16,
+      },
+      args: [],
+      accept: [Function: accept],
+    },
+    accept: [Function: accept],
+  }, LetStmt {
+    name: Token {
+      type: 22,
+      lexeme: "user",
+      literal: null,
+      line: 18,
+    },
+    initializer: CallExpr {
+      callee: VariableExpr {
+        name: Token {
+          type: 22,
+          lexeme: "User",
+          literal: null,
+          line: 18,
+        },
+        accept: [Function: accept],
+      },
+      paren: Token {
+        type: 1,
+        lexeme: ")",
+        literal: null,
+        line: 18,
+      },
+      args: [],
+      accept: [Function: accept],
+    },
+    accept: [Function: accept],
+  }, ExpressionStmt {
+    expression: SetExpr {
+      object: VariableExpr {
+        name: Token {
+          type: 22,
+          lexeme: "user",
+          literal: null,
+          line: 19,
+        },
+        accept: [Function: accept],
+      },
+      name: Token {
+        type: 22,
+        lexeme: "name",
+        literal: null,
+        line: 19,
+      },
+      value: LiteralExpr {
+        value: "Jordi",
+        accept: [Function: accept],
+      },
+      accept: [Function: accept],
+    },
+    accept: [Function: accept],
+  }, ExpressionStmt {
+    expression: CallExpr {
+      callee: GetExpr {
+        object: VariableExpr {
+          name: Token {
+            type: 22,
+            lexeme: "user",
+            literal: null,
+            line: 21,
+          },
+          accept: [Function: accept],
+        },
+        name: Token {
+          type: 22,
+          lexeme: "whoami",
+          literal: null,
+          line: 21,
+        },
+        accept: [Function: accept],
+      },
+      paren: Token {
+        type: 1,
+        lexeme: ")",
+        literal: null,
+        line: 21,
+      },
+      args: [],
+      accept: [Function: accept],
+    },
+    accept: [Function: accept],
+  }
+]
+User instance
+Jordi

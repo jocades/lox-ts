@@ -6,6 +6,13 @@ import { Lox } from '@/lox'
 const enum FunctionType {
   NONE,
   FUNCTION,
+  INITIALIZER,
+  METHOD,
+}
+
+const enum ClassType {
+  NONE,
+  CLASS,
 }
 
 const enum VariableState {
@@ -21,10 +28,22 @@ class Variable {
   ) {}
 }
 
+class Stack<T> extends Array<T> {
+  peek(): T {
+    return this[this.length - 1]
+  }
+
+  isEmpty(): boolean {
+    return this.length === 0
+  }
+}
+
 export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
   private interpreter: Interpreter
-  private scopes: Map<string, Variable>[] = [] // bool = whether or not we have finished resolving the variable's initializer
+  private scopes: Stack<Map<string, Variable>> = new Stack()
+
   private currentFunction = FunctionType.NONE
+  private currentClass = ClassType.NONE
 
   constructor(interpreter: Interpreter) {
     this.interpreter = interpreter
@@ -37,8 +56,26 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
   }
 
   visitClassStmt(stmt: ast.ClassStmt): void {
+    let enclosingClass = this.currentClass
+    this.currentClass = ClassType.CLASS
+
     this.declare(stmt.name)
     this.define(stmt.name)
+
+    this.beginScope()
+    this.scopes.peek().set('this', new Variable(stmt.name, VariableState.READ))
+
+    for (let method of stmt.methods) {
+      let declaration = FunctionType.METHOD
+      if (method.name.lexeme === 'init') {
+        declaration = FunctionType.INITIALIZER
+      }
+      this.resolveFunction(method.fn, declaration)
+    }
+
+    this.endScope()
+
+    this.currentClass = enclosingClass
   }
 
   visitEchoStmt(stmt: ast.EchoStmt): void {
@@ -108,6 +145,14 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
     this.resolve(expr.object)
   }
 
+  visitThisExpr(expr: ast.ThisExpr): void {
+    if (this.currentClass === ClassType.NONE) {
+      Lox.error(expr.keyword, 'Cannot use "this" outside of a class.')
+    }
+
+    this.resolveLocal(expr, expr.keyword, true)
+  }
+
   visitUnaryExpr(expr: ast.UnaryExpr): void {
     this.resolve(expr.right)
   }
@@ -128,11 +173,21 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
     if (this.currentFunction === FunctionType.NONE) {
       Lox.error(stmt.keyword, 'Cannot return from top-level code.')
     }
-    if (stmt.value !== null) this.resolve(stmt.value)
+
+    if (stmt.value !== null) {
+      if (this.currentFunction === FunctionType.INITIALIZER) {
+        Lox.error(stmt.keyword, 'Cannot return a value from an initializer.')
+      }
+
+      this.resolve(stmt.value)
+    }
   }
 
   visitVariableExpr(expr: ast.VariableExpr): void {
-    if (!isEmpty(this.scopes) && this.scopes.at(-1)!.get(expr.name.lexeme)) {
+    if (
+      !this.scopes.isEmpty() &&
+      this.scopes.peek().get(expr.name.lexeme)?.state === VariableState.DECLARED
+    ) {
       Lox.error(expr.name, 'Cannot read local variable in its own initializer.')
     }
 
@@ -182,9 +237,9 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
   }
 
   private declare(name: Token): void {
-    if (isEmpty(this.scopes)) return
+    if (this.scopes.isEmpty()) return
 
-    let scope = this.scopes.at(-1)!
+    let scope = this.scopes.peek()
     if (scope.has(name.lexeme)) {
       Lox.error(name, 'Variable with this name already declared in this scope.')
     }
@@ -193,9 +248,9 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
   }
 
   private define(name: Token): void {
-    if (isEmpty(this.scopes)) return
+    if (this.scopes.isEmpty()) return
     this.scopes
-      .at(-1)!
+      .peek()
       .set(name.lexeme, new Variable(name, VariableState.DEFINED))
   }
 
@@ -213,10 +268,6 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
     }
     // Not found. Assume it is global.
   }
-}
-
-function isEmpty<T>(arr: T[]): boolean {
-  return arr.length === 0
 }
 
 // https://craftinginterpreters.com/resolving-and-binding.html#a-variable-resolution-pass
