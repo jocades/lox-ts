@@ -22,7 +22,7 @@ export class LoxLenFn extends LoxCallable {
 
   call(_: Interpreter, arg: LoxObject[]): LoxObject {
     if (typeof arg[0] === 'string') {
-      return (arg[0] as string).length
+      return arg[0].length
     }
 
     throw new Error("'len()' expects a string")

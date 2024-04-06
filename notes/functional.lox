@@ -1,0 +1,6 @@
+let add = fn(x) { return fn(y) { return x + y; }; };
+
+echo add(2)(2);
+
+// Isn't this some nice looking syntax?
+// let add = x -> y -> x + y;

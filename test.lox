@@ -1,27 +1,16 @@
 class User {
-  init(name) {
-    this.name = name;
-  }
-
-  whoami() {
-    echo this.name;
+  init() {
+    this.name = "Jordi";
   }
 }
 
-let user = User("Pepe");
-user.whoami();
-user.name = "Jordi";
-user.whoami();
-
-fn greet(name) {
-  echo "Hello " + name + "!";
+class Book {
+  init(author) {
+    this.author = author;
+  }
 }
 
-user.greet = greet;
-user.greet("Juanito");
+let book = Book(User());
 
-user.age = 25;
-
-let u2 = user.init("idk");
-echo u2.age;
-user.greet("asdfasdf");
+echo book.author;
+echo book.author.name;

@@ -87,7 +87,7 @@ import { Lox } from '../lox'
 // term           → factor ( ( "-" | "+" ) factor )* ;
 // factor         → unary ( ( "/" | "*" ) unary )* ;
 // unary          → ( "!" | "-" ) unary
-//                | primary ;
+//                | call ;
 // call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
 // arguments      → expression ( "," expression )* ;
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
@@ -514,7 +514,7 @@ export class Parser {
   }
 
   /**
-   * unary          → ( "!" | "-" ) unary | primary ;
+   * unary          → ( "!" | "-" ) unary | call ;
    */
   private unary(): Expr {
     if (this.match(TokenType.BANG, TokenType.MINUS)) {

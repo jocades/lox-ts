@@ -47,6 +47,7 @@ export class LoxClass extends LoxCallable {
   call(interpreter: Interpreter, args: LoxObject[]): LoxInstance {
     let instance = new LoxInstance(this)
     let initializer = this.findMethod('init')
+
     if (initializer !== null) {
       initializer.bind(instance).call(interpreter, args)
     }
@@ -147,6 +148,6 @@ export class LoxFunction extends LoxCallable {
 
   toString(): string {
     if (!this.name) return '<fn>'
-    return `<fn> ${this.name}`
+    return `<fn ${this.name}>`
   }
 }
