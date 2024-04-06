@@ -80,6 +80,7 @@ export class LoxInstance {
     }
 
     let method = this.klass.findMethod(name.lexeme)
+
     if (method !== null) {
       return method.bind(this)
     }
@@ -95,7 +96,7 @@ export class LoxInstance {
   }
 
   toString(): string {
-    return `${this.klass.name} instance`
+    return `'${this.klass.name}' instance`
   }
 }
 
@@ -143,12 +144,15 @@ export class LoxFunction extends LoxCallable {
     } catch (e) {
       if (e instanceof LoxFunction.Return) {
         // allow empty returns in initializers (returning `this`)
-        if (this.isInitializer) return this.closure.getAt(0, 'this')
+        // if (this.isInitializer) return this.closure.getAt(0, 'this')
+        if (this.isInitializer) return this.closure.getThis()
         return e.value
+      } else {
+        throw e
       }
     }
 
-    if (this.isInitializer) return this.closure.getAt(0, 'this')
+    if (this.isInitializer) return this.closure.getThis()
     return null
   }
 

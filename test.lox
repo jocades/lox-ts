@@ -1,23 +1,9 @@
-fn what() {
-  class Idk {
-    init() {
-      self.name = "Jordi";
-    }
+class User {
+  init(name, age) {
+    this.name = name;
+    this.age = age;
   }
-
-  return Idk;
 }
 
-let inst = what()();
-echo inst;
-
-fn test() {
-  fn init() {
-    self.name = "what";
-  }
-
-  return init;
-}
-
-test()();
+let user = User("Jordi", 25);
 

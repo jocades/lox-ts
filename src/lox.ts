@@ -33,7 +33,7 @@ export class Lox {
       }
 
       if (input.startsWith('.')) {
-        this.handleCommand(input)
+        await this.handleCommand(input)
         continue
       }
 
@@ -58,7 +58,11 @@ export class Lox {
     // stop if there was a resolution error
     if (this.hadError) return
 
-    if (Debug.AST) console.log('[AST]', statements)
+    if (Debug.AST)
+      console.log(
+        '[AST]',
+        statements.map((node) => console.log('NODE', node)),
+      )
     if (Debug.JSON) await this.writeAst(statements)
 
     this.interpreter.interpret(statements, { repl })
@@ -84,8 +88,10 @@ export class Lox {
     this.hadRuntimeError = true
   }
 
-  private static handleCommand(input: string): void {
-    switch (input) {
+  private static async handleCommand(input: string): Promise<void> {
+    let [cmd, arg] = input.split(' ')
+
+    switch (cmd) {
       case '.exit':
         process.exit(0)
 
@@ -96,6 +102,17 @@ export class Lox {
 
       case '.env':
         console.log('[ENV]', this.interpreter.environment)
+        break
+
+      // load some code from a file
+      case '.load':
+        if (!arg) {
+          console.log('No file specified')
+          break
+        }
+        let source = await Bun.file(arg).text()
+        await this.run(source)
+        console.log('Loaded', arg)
         break
 
       default:

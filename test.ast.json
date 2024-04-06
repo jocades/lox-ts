@@ -2,208 +2,82 @@
   {
     "name": {
       "type": 22,
-      "lexeme": "what",
+      "lexeme": "User",
       "literal": null,
       "line": 1
     },
-    "fn": {
-      "params": [],
-      "body": [
-        {
-          "name": {
-            "type": 22,
-            "lexeme": "Idk",
-            "literal": null,
-            "line": 2
-          },
-          "superclass": null,
-          "methods": [
-            {
-              "name": {
-                "type": 22,
-                "lexeme": "init",
-                "literal": null,
-                "line": 3
-              },
-              "fn": {
-                "params": [],
-                "body": [
-                  {
-                    "expression": {
-                      "object": {
-                        "name": {
-                          "type": 22,
-                          "lexeme": "self",
-                          "literal": null,
-                          "line": 4
-                        }
-                      },
-                      "name": {
-                        "type": 22,
-                        "lexeme": "name",
-                        "literal": null,
-                        "line": 4
-                      },
-                      "value": {
-                        "value": "Jordi"
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "keyword": {
-            "type": 37,
-            "lexeme": "return",
-            "literal": null,
-            "line": 8
-          },
-          "value": {
-            "name": {
-              "type": 22,
-              "lexeme": "Idk",
-              "literal": null,
-              "line": 8
-            }
-          }
-        }
-      ]
-    }
-  },
-  {
-    "name": {
-      "type": 22,
-      "lexeme": "inst",
-      "literal": null,
-      "line": 11
-    },
-    "initializer": {
-      "callee": {
-        "callee": {
-          "name": {
-            "type": 22,
-            "lexeme": "what",
-            "literal": null,
-            "line": 11
-          }
-        },
-        "paren": {
-          "type": 1,
-          "lexeme": ")",
+    "superclass": null,
+    "methods": [
+      {
+        "name": {
+          "type": 22,
+          "lexeme": "init",
           "literal": null,
-          "line": 11
+          "line": 2
         },
-        "args": []
-      },
-      "paren": {
-        "type": 1,
-        "lexeme": ")",
-        "literal": null,
-        "line": 11
-      },
-      "args": []
-    }
-  },
-  {
-    "expression": {
-      "name": {
-        "type": 22,
-        "lexeme": "inst",
-        "literal": null,
-        "line": 12
-      }
-    }
-  },
-  {
-    "name": {
-      "type": 22,
-      "lexeme": "test",
-      "literal": null,
-      "line": 14
-    },
-    "fn": {
-      "params": [],
-      "body": [
-        {
-          "name": {
-            "type": 22,
-            "lexeme": "init",
-            "literal": null,
-            "line": 15
-          },
-          "fn": {
-            "params": [],
-            "body": [
-              {
-                "expression": {
+        "fn": {
+          "params": [],
+          "body": [
+            {
+              "expression": {
+                "value": "--INIT--"
+              }
+            },
+            {
+              "expression": {
+                "object": {
                   "object": {
                     "name": {
                       "type": 22,
-                      "lexeme": "self",
+                      "lexeme": "what",
                       "literal": null,
-                      "line": 16
+                      "line": 4
                     }
                   },
                   "name": {
                     "type": 22,
-                    "lexeme": "name",
+                    "lexeme": "foo",
                     "literal": null,
-                    "line": 16
-                  },
-                  "value": {
-                    "value": "what"
+                    "line": 4
                   }
+                },
+                "name": {
+                  "type": 22,
+                  "lexeme": "bar",
+                  "literal": null,
+                  "line": 4
+                },
+                "value": {
+                  "value": "blablabla..."
                 }
               }
-            ]
-          }
-        },
-        {
-          "keyword": {
-            "type": 37,
-            "lexeme": "return",
-            "literal": null,
-            "line": 19
-          },
-          "value": {
-            "name": {
-              "type": 22,
-              "lexeme": "init",
-              "literal": null,
-              "line": 19
             }
-          }
+          ]
         }
-      ]
-    }
+      }
+    ]
   },
   {
-    "expression": {
+    "name": {
+      "type": 22,
+      "lexeme": "user",
+      "literal": null,
+      "line": 8
+    },
+    "initializer": {
       "callee": {
-        "callee": {
-          "name": {
-            "type": 22,
-            "lexeme": "test",
-            "literal": null,
-            "line": 22
-          }
-        },
-        "paren": {
-          "type": 1,
-          "lexeme": ")",
+        "name": {
+          "type": 22,
+          "lexeme": "User",
           "literal": null,
-          "line": 22
-        },
-        "args": []
+          "line": 8
+        }
       },
       "paren": {
         "type": 1,
         "lexeme": ")",
         "literal": null,
-        "line": 22
+        "line": 8
       },
       "args": []
     }

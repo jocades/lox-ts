@@ -56,4 +56,8 @@ export class Environment {
   assignAt(distance: number, name: Token, value: LoxObject): void {
     this.ancestor(distance).values.set(name.lexeme, value)
   }
+
+  getThis(): LoxObject {
+    return this.values.get('this')!
+  }
 }
