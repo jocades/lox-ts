@@ -1,0 +1,16 @@
+class Person {
+  greet() {
+    echo "Hello from Person!";
+  }
+}
+
+class Student < Person {
+  what() {
+    super.greet();
+  }
+}
+
+let stdt = Student();
+
+stdt.what();
+

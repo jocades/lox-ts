@@ -1,0 +1,9 @@
+class Doughnut {
+  cook() {
+    echo "Fry until golden brown.";
+  }
+}
+
+class BostonCream < Doughnut {}
+
+BostonCream().cook();

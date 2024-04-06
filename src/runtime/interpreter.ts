@@ -21,7 +21,7 @@ export class Interpreter
   implements ast.ExprVisitor<LoxObject>, ast.StmtVisitor<void>
 {
   globals = new Environment()
-  private environment = this.globals
+  public environment = this.globals
   private locals: Map<ast.Expr, number> = new Map()
   private options: InterpreterOptions = { repl: false }
 
@@ -29,6 +29,7 @@ export class Interpreter
     this.globals.define('clock', new LoxClockFn())
     this.globals.define('len', new LoxLenFn())
     this.globals.define('type', new LoxTypeFn())
+    this.globals.define('PI', Math.PI)
   }
 
   public interpret(statements: ast.Stmt[], options?: InterpreterOptions): void {
@@ -77,7 +78,23 @@ export class Interpreter
   }
 
   visitClassStmt(stmt: ast.ClassStmt): void {
+    let superclass: LoxObject | null = null
+    if (stmt.superclass !== null) {
+      superclass = this.evaluate(stmt.superclass)
+      if (!(superclass instanceof LoxClass)) {
+        throw new RuntimeError(
+          stmt.superclass.name,
+          'Superclass must be a class.',
+        )
+      }
+    }
+
     this.environment.define(stmt.name.lexeme, null)
+
+    if (stmt.superclass !== null) {
+      this.environment = new Environment(this.environment)
+      this.environment.define('super', superclass)
+    }
 
     let methods = new Map<string, LoxFunction>()
     for (let method of stmt.methods) {
@@ -90,7 +107,12 @@ export class Interpreter
       methods.set(method.name.lexeme, fn)
     }
 
-    let klass = new LoxClass(stmt.name.lexeme, methods)
+    let klass = new LoxClass(stmt.name.lexeme, superclass, methods)
+
+    if (superclass !== null) {
+      this.environment = this.environment.enclosing!
+    }
+
     this.environment.assign(stmt.name, klass)
   }
 
@@ -291,6 +313,23 @@ export class Interpreter
     let value = this.evaluate(expr.value)
     object.set(expr.name, value)
     return value
+  }
+
+  visitSuperExpr(expr: ast.SuperExpr): LoxObject {
+    let distance = this.locals.get(expr)!
+    let superclass = this.environment.getAt(distance, 'super') as LoxClass
+    let object = this.environment.getAt(distance - 1, 'this') as LoxInstance
+
+    let method = superclass.findMethod(expr.method.lexeme)
+
+    if (method === null) {
+      throw new RuntimeError(
+        expr.method,
+        `Undefined property '${expr.method.lexeme}'.`,
+      )
+    }
+
+    return method.bind(object)
   }
 
   visitThisExpr(expr: ast.ThisExpr): LoxObject {

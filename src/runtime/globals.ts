@@ -1,4 +1,4 @@
-import { LoxCallable, type LoxObject } from './values'
+import { LoxCallable, LoxClass, LoxInstance, type LoxObject } from './values'
 import type { Interpreter } from './interpreter'
 
 export class LoxClockFn extends LoxCallable {
@@ -41,6 +41,11 @@ export class LoxTypeFn extends LoxCallable {
   call(_: Interpreter, args: LoxObject[]): LoxObject {
     let arg = args[0]
     if (arg === null) return 'nil'
+    if (arg instanceof LoxCallable) {
+      if (arg instanceof LoxClass) return 'class'
+      return 'function'
+    }
+    if (arg instanceof LoxInstance) return 'object'
     return typeof arg
   }
 

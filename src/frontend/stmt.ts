@@ -1,4 +1,4 @@
-import type { Expr, FunctionExpr } from './expr'
+import type { Expr, FunctionExpr, VariableExpr } from './expr'
 import type { Token } from './lexer'
 
 export interface Stmt {
@@ -37,6 +37,7 @@ export class BreakStmt implements Stmt {
 export class ClassStmt implements Stmt {
   constructor(
     public name: Token,
+    public superclass: VariableExpr | null,
     public methods: FunctionStmt[],
   ) {}
 

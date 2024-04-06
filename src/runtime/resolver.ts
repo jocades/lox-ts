@@ -13,6 +13,7 @@ const enum FunctionType {
 const enum ClassType {
   NONE,
   CLASS,
+  SUBCLASS,
 }
 
 const enum VariableState {
@@ -62,6 +63,25 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
     this.declare(stmt.name)
     this.define(stmt.name)
 
+    if (
+      stmt.superclass !== null &&
+      stmt.name.lexeme === stmt.superclass.name.lexeme
+    ) {
+      Lox.error(stmt.superclass.name, 'A class cannot inherit from itself.')
+    }
+
+    if (stmt.superclass !== null) {
+      this.currentClass = ClassType.SUBCLASS
+      this.resolve(stmt.superclass)
+    }
+
+    if (stmt.superclass !== null) {
+      this.beginScope()
+      this.scopes
+        .peek()
+        .set('super', new Variable(stmt.name, VariableState.READ))
+    }
+
     this.beginScope()
     this.scopes.peek().set('this', new Variable(stmt.name, VariableState.READ))
 
@@ -74,6 +94,8 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
     }
 
     this.endScope()
+
+    if (stmt.superclass !== null) this.endScope()
 
     this.currentClass = enclosingClass
   }
@@ -145,9 +167,22 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
     this.resolve(expr.object)
   }
 
+  visitSuperExpr(expr: ast.SuperExpr): void {
+    if (this.currentClass === ClassType.NONE) {
+      Lox.error(expr.keyword, "Cannot use 'super' outside of a class.")
+    } else if (this.currentClass !== ClassType.SUBCLASS) {
+      Lox.error(
+        expr.keyword,
+        "Cannot use 'super' in a class with no superclas.",
+      )
+    }
+
+    this.resolveLocal(expr, expr.keyword, true)
+  }
+
   visitThisExpr(expr: ast.ThisExpr): void {
     if (this.currentClass === ClassType.NONE) {
-      Lox.error(expr.keyword, 'Cannot use "this" outside of a class.')
+      Lox.error(expr.keyword, "Cannot use 'this' outside of a class.")
     }
 
     this.resolveLocal(expr, expr.keyword, true)

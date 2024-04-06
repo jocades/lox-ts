@@ -1,0 +1,13 @@
+class Circle {
+  init(radius) {
+    this.radius = radius
+  }
+
+ // add support for getters and setters
+  area {
+    return 3.14 * this.radius * this.radius
+  }
+}
+
+let circle = Circle(4);
+echo circle.area; // -> 50.26

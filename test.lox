@@ -1,16 +1,23 @@
-class User {
-  init() {
-    this.name = "Jordi";
+fn what() {
+  class Idk {
+    init() {
+      self.name = "Jordi";
+    }
   }
+
+  return Idk;
 }
 
-class Book {
-  init(author) {
-    this.author = author;
+let inst = what()();
+echo inst;
+
+fn test() {
+  fn init() {
+    self.name = "what";
   }
+
+  return init;
 }
 
-let book = Book(User());
+test()();
 
-echo book.author;
-echo book.author.name;

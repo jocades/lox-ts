@@ -94,9 +94,9 @@ export class Lox {
         console.log(`AST is now ${Debug.AST ? 'enabled' : 'disabled'}`)
         break
 
-      // case '.env':
-      //   console.log(env)
-      //   break
+      case '.env':
+        console.log('[ENV]', this.interpreter.environment)
+        break
 
       default:
         console.log(`Unknown command '${input}'`)

@@ -24,6 +24,7 @@ import {
   GetExpr,
   SetExpr,
   ThisExpr,
+  SuperExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
 import { Lexer, Token, TokenType } from './lexer'
@@ -51,7 +52,8 @@ import { Lox } from '../lox'
 //                | letDecl
 //                | statement ;
 //
-// classDecl      → "class" IDENTIFIER "{" function* "}" ;
+// classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
+//                | "{" function* "}" ;
 // fnDecl         → "fn" function ;
 // function       → IDENTIFIER "(" parameters? ")" block ;
 // parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
@@ -90,9 +92,9 @@ import { Lox } from '../lox'
 //                | call ;
 // call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
 // arguments      → expression ( "," expression )* ;
-// primary        → NUMBER | STRING | "true" | "false" | "nil"
-//                | "(" expression ")"
-//                | IDENTIFIER ;
+// primary        → "true" | "false" | "nil" | "this"
+//                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
+//                | "super" "." IDENTIFIER ;
 //
 
 export class Parser {
@@ -151,6 +153,13 @@ export class Parser {
    */
   private classDeclaration(): Stmt {
     let name = this.consume(TokenType.IDENTIFIER, 'Expected class name.')
+
+    let superclass: VariableExpr | null = null
+    if (this.match(TokenType.LESS)) {
+      this.consume(TokenType.IDENTIFIER, 'Expected superclass name.')
+      superclass = new VariableExpr(this.prev())
+    }
+
     this.consume(TokenType.LBRACE, "Expected '{' before class body.")
 
     let methods: FunctionStmt[] = []
@@ -160,7 +169,7 @@ export class Parser {
     }
     this.consume(TokenType.RBRACE, "Expected '}' after class body.")
 
-    return new ClassStmt(name, methods)
+    return new ClassStmt(name, superclass, methods)
   }
 
   /**
@@ -584,6 +593,16 @@ export class Parser {
 
     if (this.match(TokenType.IDENTIFIER)) {
       return new VariableExpr(this.prev())
+    }
+
+    if (this.match(TokenType.SUPER)) {
+      let keyword = this.prev()
+      this.consume(TokenType.DOT, "Expected '.' after 'super'.")
+      let method = this.consume(
+        TokenType.IDENTIFIER,
+        'Expected superclass method name.',
+      )
+      return new SuperExpr(keyword, method)
     }
 
     // separate from fnDecl to allow lambda functions

@@ -1,0 +1,9 @@
+let x = 1;
+let x = 2; // No error since global scope
+echo x;
+
+{
+  let y = 1;
+  let y = 2; // error: Variable with this name already declared in this scope.
+  echo y;
+}

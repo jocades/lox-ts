@@ -26,6 +26,7 @@ export abstract class LoxCallable {
 export class LoxClass extends LoxCallable {
   constructor(
     public name: string,
+    public superclass: LoxClass | null,
     private methods: Map<string, LoxFunction>,
   ) {
     super()
@@ -41,6 +42,11 @@ export class LoxClass extends LoxCallable {
     if (this.methods.has(name)) {
       return this.methods.get(name)!
     }
+
+    if (this.superclass !== null) {
+      return this.superclass.findMethod(name)
+    }
+
     return null
   }
 
