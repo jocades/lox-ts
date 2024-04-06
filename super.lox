@@ -5,12 +5,13 @@ class Person {
 }
 
 class Student < Person {
-  what() {
+  greet() {
     super.greet();
+    echo "Hello from Student!"
   }
 }
 
 let stdt = Student();
 
-stdt.what();
+stdt.greet();
 
