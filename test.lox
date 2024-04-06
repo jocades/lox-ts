@@ -7,3 +7,11 @@ class User {
 
 let user = User("Jordi", 25);
 
+let x;
+
+{
+  let x;
+}
+
+
+

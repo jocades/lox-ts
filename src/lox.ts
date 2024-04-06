@@ -12,10 +12,7 @@ export class Lox {
   static hadError = false
   static hadRuntimeError = false
 
-  static async file(
-    path: string,
-    // opts: { output: boolean } = { output: false },
-  ): Promise<void> {
+  static async file(path: string): Promise<void> {
     const source = await Bun.file(path).text()
     await this.run(source)
 
@@ -58,12 +55,9 @@ export class Lox {
     // stop if there was a resolution error
     if (this.hadError) return
 
-    if (Debug.AST)
-      console.log(
-        '[AST]',
-        statements.map((node) => console.log('NODE', node)),
-      )
+    if (Debug.AST) console.log('[AST]', statements)
     if (Debug.JSON) await this.writeAst(statements)
+    if (Debug.EXPR) console.log(new AstPrinter().stringify(statements))
 
     this.interpreter.interpret(statements, { repl })
   }
@@ -73,19 +67,31 @@ export class Lox {
   static error(token: Token, message: string): void {
     this.report(
       token.line,
+      token.column,
       token.type === TokenType.EOF ? 'at end' : `at '${token.lexeme}'`,
       message,
     )
   }
 
-  private static report(line: number, where: string, message: string): void {
-    console.log(`[line ${line}] Error ${where}: ${message}`)
+  private static report(
+    line: number,
+    column: number,
+    where: string,
+    message: string,
+  ): void {
+    console.log(`[line ${line} : col ${column}] Error ${where}: ${message}`)
     this.hadError = true
   }
 
   static runtimeError(error: RuntimeError): void {
     console.log(error.message, `\n[line ${error.token.line}]`)
     this.hadRuntimeError = true
+  }
+
+  static warn(token: Token, message: string): void {
+    console.log(
+      `[line ${token.line} : col ${token.column}] Warning at '${token.lexeme}': ${message}`,
+    )
   }
 
   private static async handleCommand(input: string): Promise<void> {
@@ -104,7 +110,6 @@ export class Lox {
         console.log('[ENV]', this.interpreter.environment)
         break
 
-      // load some code from a file
       case '.load':
         if (!arg) {
           console.log('No file specified')
@@ -113,6 +118,13 @@ export class Lox {
         let source = await Bun.file(arg).text()
         await this.run(source)
         console.log('Loaded', arg)
+        break
+
+      case '.expr':
+        Debug.EXPR = !Debug.EXPR
+        console.log(
+          `S-Expression printing is now ${Debug.EXPR ? 'enabled' : 'disabled'}`,
+        )
         break
 
       default:

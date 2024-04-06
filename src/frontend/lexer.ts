@@ -54,6 +54,7 @@ export class Token {
     public lexeme: string,
     public literal: any,
     public line: number,
+    public column: number,
   ) {}
 
   // public toString(): string {
@@ -77,7 +78,7 @@ export class Lexer {
       this.start = this.cursor
       this.scan()
     }
-    this.tokens.push(new Token(TokenType.EOF, '<EOF>', null, this.line))
+    this.tokens.push(new Token(TokenType.EOF, '', null, this.line, 0))
 
     return this.tokens
   }
@@ -262,7 +263,8 @@ export class Lexer {
   /** Pushes a new token into the list */
   private push(type: TokenType, literal: any = null) {
     const raw = this.source.substring(this.start, this.cursor)
-    this.tokens.push(new Token(type, raw, literal, this.line))
+    const column = this.cursor - this.source.lastIndexOf('\n', this.start) - 1
+    this.tokens.push(new Token(type, raw, literal, this.line, column))
   }
 }
 
@@ -282,21 +284,3 @@ export function isAlphaNumeric(c: string): boolean {
 export function isWhitespace(c: string): boolean {
   return /^[ \t\n]$/.test(c)
 }
-
-function test() {
-  const source = `
-// this is a comment
-(( )){} // grouping stuff
-!*+-/=<> <= == // operators
-"hello world" // string
-123 // number
-identifier // identifier
-and class echo else false for fn if let nil or return super this true while // keywords
-`
-  const lexer = new Lexer(source)
-  const tokens = lexer.lex()
-
-  console.log(tokens)
-}
-
-// test()

@@ -144,7 +144,6 @@ export class LoxFunction extends LoxCallable {
     } catch (e) {
       if (e instanceof LoxFunction.Return) {
         // allow empty returns in initializers (returning `this`)
-        // if (this.isInitializer) return this.closure.getAt(0, 'this')
         if (this.isInitializer) return this.closure.getThis()
         return e.value
       } else {

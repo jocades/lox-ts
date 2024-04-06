@@ -27,7 +27,7 @@ import {
   SuperExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
-import { Lexer, Token, TokenType } from './lexer'
+import { Token, TokenType } from './lexer'
 import { Lox } from '../lox'
 
 // --- LOX EXPRESSIONS (RECURSIVE DESCENT PARSING) --- https://en.wikipedia.org/wiki/Recursive_descent_parser
@@ -703,18 +703,3 @@ export class Parser {
     }
   }
 }
-
-function test() {
-  let source = `(2 + 2) * 2`
-  let tokens = new Lexer(source).lex()
-  // console.log('TOKENS', tokens.map(String))
-
-  let parser = new Parser(tokens)
-  let expr = parser.parse()
-  console.log('EXPR', expr)
-
-  // let printer = new AstPrinter()
-  // console.log(printer.print(expr!))
-}
-
-// test()

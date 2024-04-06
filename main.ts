@@ -18,5 +18,5 @@ async function main(argv: string[]) {
 }
 
 if (import.meta.main) {
-  main(process.argv) // ARGV -> ['/bin/bun', '__filename', ...args]
+  main(process.argv)
 }

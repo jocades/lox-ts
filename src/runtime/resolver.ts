@@ -262,8 +262,7 @@ export class Resolver implements ast.ExprVisitor<void>, ast.StmtVisitor<void> {
 
     for (let variable of scope.values()) {
       if (variable.state === VariableState.DEFINED) {
-        // TODO: add a warn level to Lox i.e: Lox.warn();
-        Lox.error(
+        Lox.warn(
           variable.name,
           'Local variable is defined but never used. Consider removing it.',
         )
