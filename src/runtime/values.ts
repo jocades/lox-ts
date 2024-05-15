@@ -1,9 +1,8 @@
 import type { Interpreter } from './interpreter'
 import { Environment } from './environment'
-import type { FunctionExpr } from '@/frontend/expr'
+import { FunctionExpr } from '@/frontend/expr'
 import type { Token } from '@/frontend/lexer'
 import { RuntimeError } from '@/lib/errors'
-// import { Return } from './exceptions'
 
 /**
  * Represents a Lox value at runtime.
@@ -27,7 +26,7 @@ export class LoxClass extends LoxCallable {
   constructor(
     public name: string,
     public superclass: LoxClass | null,
-    private methods: Map<string, LoxFunction>,
+    public methods: Map<string, LoxFunction>,
   ) {
     super()
   }

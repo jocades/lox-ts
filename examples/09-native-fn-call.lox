@@ -1,5 +1,5 @@
 
-let N = 1000000;
+let N = 1000000; // 1 million
 let start = clock();
 
 for (let i = 0; i < N; i = i + 1) {}

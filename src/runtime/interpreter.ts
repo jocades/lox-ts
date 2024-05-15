@@ -85,7 +85,7 @@ export class Interpreter
       if (!(superclass instanceof LoxClass)) {
         throw new RuntimeError(
           stmt.superclass.name,
-          'Superclass must be a class.'
+          'Superclass must be a class.',
         )
       }
     }
@@ -103,7 +103,7 @@ export class Interpreter
         method.name.lexeme,
         method.fn,
         this.environment,
-        method.name.lexeme === 'init'
+        method.name.lexeme === 'init',
       )
       methods.set(method.name.lexeme, fn)
     }
@@ -137,7 +137,7 @@ export class Interpreter
     let name = stmt.name.lexeme
     this.environment.define(
       name,
-      new LoxFunction(name, stmt.fn, this.environment)
+      new LoxFunction(name, stmt.fn, this.environment),
     )
   }
 
@@ -223,7 +223,7 @@ export class Interpreter
 
         throw new RuntimeError(
           expr.operator,
-          'Operands must be two numbers or two strings'
+          'Operands must be two numbers or two strings',
         )
       }
       case TokenType.SLASH: {
@@ -231,7 +231,7 @@ export class Interpreter
         if (right === 0) {
           throw new RuntimeError(
             expr.operator,
-            'Division by zero is not allowed.'
+            'Division by zero is not allowed.',
           )
         }
         return (left as number) / (right as number)
@@ -256,7 +256,7 @@ export class Interpreter
     if (args.length !== callee.arity()) {
       throw new RuntimeError(
         expr.paren,
-        `Expected ${callee.arity()} arguments but got ${args.length}.`
+        `Expected ${callee.arity()} arguments but got ${args.length}.`,
       )
     }
 
@@ -326,7 +326,7 @@ export class Interpreter
     if (method === null) {
       throw new RuntimeError(
         expr.method,
-        `Undefined property '${expr.method.lexeme}'.`
+        `Undefined property '${expr.method.lexeme}'.`,
       )
     }
 
@@ -376,7 +376,7 @@ export class Interpreter
   private checkNumberOperands(
     operator: Token,
     left: LoxObject,
-    right: LoxObject
+    right: LoxObject,
   ) {
     if (typeof left === 'number' && typeof right === 'number') return
     throw new RuntimeError(operator, 'Operands must be numbers.')

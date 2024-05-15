@@ -27,7 +27,7 @@ import {
   SuperExpr,
 } from './ast'
 import { ParseError } from '../lib/errors'
-import { Token, TokenType } from './lexer'
+import {  Token, TokenType } from './lexer'
 import { Lox } from '../lox'
 
 // --- LOX EXPRESSIONS (RECURSIVE DESCENT PARSING) --- https://en.wikipedia.org/wiki/Recursive_descent_parser

@@ -1,17 +1,14 @@
-class User {
-  init(name, age) {
-    this.name = name;
-    this.age = age;
-  }
+fn fib(n) {
+  if (n < 2) return n;
+  return fib(n -1) + fib(n -2);
 }
 
-let user = User("Jordi", 25);
+let N = 40;
 
-let x;
+let start = clock();
+let result = fib(N);
+let elapsed = clock() - start;
 
-{
-  let x;
-}
-
-
+echo "N: " + N + " Result: " + result  + " Took: " + elapsed + " ms";
+echo "N: " + N + " Result: " + result  + " Took: " + elapsed / 1000 + " seconds";
 
