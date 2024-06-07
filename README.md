@@ -1,15 +1,4 @@
-# lox
+# Lox Language
 
-To install dependencies:
+Lox language implementation in TypeScript (interpreter). (Crafting Interpreters)[https://craftinginterpreters.com/]
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run main.ts
-```
-
-This project was created using `bun init` in bun v1.0.36. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
